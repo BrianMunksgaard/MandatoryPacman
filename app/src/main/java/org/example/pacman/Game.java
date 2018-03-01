@@ -18,8 +18,12 @@ public class Game {
     private Context context;
     private int points = 0; //how points do we have
 
-    //bitmap of the pacman
+    //bitmap of the pacman_right
     private Bitmap pacBitmap;
+    private Bitmap pacBitmapLeft;
+    private Bitmap pacBitmapRight;
+    private Bitmap pacBitmapUp;
+    private Bitmap pacBitmapDown;
     //textview reference to points
     private TextView pointsView;
     private int pacx, pacy;
@@ -33,7 +37,12 @@ public class Game {
     {
         this.context = context;
         this.pointsView = view;
-        pacBitmap = BitmapFactory.decodeResource(context.getResources(), R.drawable.pacman);
+        pacBitmapLeft = BitmapFactory.decodeResource(context.getResources(), R.drawable.pacman_left);
+        pacBitmapRight = BitmapFactory.decodeResource(context.getResources(), R.drawable.pacman_right);
+        pacBitmapUp = BitmapFactory.decodeResource(context.getResources(), R.drawable.pacman_up);
+        pacBitmapDown = BitmapFactory.decodeResource(context.getResources(), R.drawable.pacman_down);
+
+        pacBitmap = pacBitmapLeft;
 
     }
 
@@ -59,21 +68,36 @@ public class Game {
         this.w = w;
     }
 
-    public void movePacmanRight(int pixels)
+    public void movePacman(int pixels, Direction direction)
     {
-        //still within our boundaries?
-        if (pacx+pixels+pacBitmap.getWidth()<w) {
-            pacx = pacx + pixels;
+        int _pacx = pacx;
+        int _pacy = pacy;
+
+        switch(direction) {
+            case UP:
+                if (pacy - pixels  > 0) pacy -= pixels;
+                pacBitmap = pacBitmapUp;
+                break;
+            case DOWN:
+                if (pacy + pixels + pacBitmap.getHeight() < h) pacy += pixels;
+                pacBitmap = pacBitmapDown;
+                break;
+            case LEFT:
+                if (pacx - pixels  > 0) pacx -= pixels;
+                pacBitmap = pacBitmapLeft;
+                break;
+            case RIGHT:
+                if (pacx + pixels + pacBitmap.getWidth() < w)  pacx += pixels;
+                pacBitmap = pacBitmapRight;
+                break;
+        }
+
+        if(pacx != _pacx || pacy != _pacy) {
             doCollisionCheck();
             gameView.invalidate();
         }
     }
 
-    //TODO check if the pacman touches a gold coin
-    //and if yes, then update the neccesseary data
-    //for the gold coins and the points
-    //so you need to go through the arraylist of goldcoins and
-    //check each of them for a collision with the pacman
     public void doCollisionCheck()
     {
 

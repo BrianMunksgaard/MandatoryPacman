@@ -6,13 +6,8 @@ import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
-
-import org.w3c.dom.Text;
-
-import static android.R.attr.button;
 
 public class MainActivity extends Activity {
     //reference to the main view
@@ -30,27 +25,44 @@ public class MainActivity extends Activity {
         gameView =  findViewById(R.id.gameView);
         TextView textView = findViewById(R.id.points);
 
-
         game = new Game(this,textView);
         game.setGameView(gameView);
         gameView.setGame(game);
 
         game.newGame();
 
-        Button buttonRight = findViewById(R.id.moveRight);
-        //listener of our pacman, when somebody clicks it
-        buttonRight.setOnClickListener(new View.OnClickListener() {
+        findViewById(R.id.moveLeft).setOnClickListener(new View.OnClickListener() {
 
             @Override
             public void onClick(View v) {
-                game.movePacmanRight(10);
+                game.movePacman(10, Direction.LEFT);
             }
         });
 
+        findViewById(R.id.moveRight).setOnClickListener(new View.OnClickListener() {
 
+            @Override
+            public void onClick(View v) {
+                game.movePacman(10, Direction.RIGHT);
+            }
+        });
+
+        findViewById(R.id.moveUp).setOnClickListener(new View.OnClickListener() {
+
+            @Override
+            public void onClick(View v) {
+                game.movePacman(10, Direction.UP);
+            }
+        });
+
+        findViewById(R.id.moveDown).setOnClickListener(new View.OnClickListener() {
+
+            @Override
+            public void onClick(View v) {
+                game.movePacman(10, Direction.DOWN);
+            }
+        });
     }
-
-
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {

@@ -21,6 +21,6 @@ public class ExampleInstrumentedTest {
         // Context of the app under test.
         Context appContext = InstrumentationRegistry.getTargetContext();
 
-        assertEquals("org.example.pacman", appContext.getPackageName());
+        assertEquals("org.example.pacman_right", appContext.getPackageName());
     }
 }

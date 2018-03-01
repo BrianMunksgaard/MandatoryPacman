@@ -1,30 +1,74 @@
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:orientation="vertical"
     android:layout_height="match_parent"
     tools:context="org.example.pacman.MainActivity" >
 
-    <Button
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="@string/move_right"
-        android:id="@+id/moveRight"/>
-
     <TextView
         android:id="@+id/points"
         android:textSize="24sp"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="@string/points" />
+        android:text="@string/points"
+        />
+
+
+    <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:tools="http://schemas.android.com/tools"
+        android:layout_width="match_parent"
+        android:orientation="horizontal"
+        android:layout_height="wrap_content"
+        tools:context="org.example.pacman.MainActivity"
+        android:weightSum="4"
+        android:id="@+id/actionBar"
+        android:layout_alignParentBottom="true"
+        >
+
+        <Button
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:text="@string/move_left"
+            android:id="@+id/moveLeft"
+            android:layout_weight="1"
+            />
+
+        <Button
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:text="@string/move_right"
+            android:id="@+id/moveRight"
+            android:layout_weight="1"
+            />
+
+        <Button
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:text="@string/move_up"
+            android:id="@+id/moveUp"
+            android:layout_weight="1"
+            />
+
+        <Button
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:text="@string/move_down"
+            android:id="@+id/moveDown"
+            android:layout_weight="1"
+            />
+
+    </LinearLayout>
 
     <!-- Notice how the custom view is referenced here with
-    a full package path-->
+a full package path-->
     <org.example.pacman.GameView
         android:id="@+id/gameView"
         android:layout_width="match_parent"
-        android:layout_height="match_parent">
-
+        android:layout_height="match_parent"
+        android:layout_gravity="fill"
+        android:layout_below="@+id/points"
+        android:layout_above="@+id/actionBar"
+        >
     </org.example.pacman.GameView>
 
-</LinearLayout>
+</RelativeLayout>
