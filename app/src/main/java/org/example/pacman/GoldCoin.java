@@ -7,4 +7,37 @@ package org.example.pacman;
  */
 
 public class GoldCoin {
+
+    private int x;
+    private int y;
+    private int value;
+    private boolean hasBeenTaken = false;
+
+    public GoldCoin(int x, int y, int value) {
+        this.x = x;
+        this.y = y;
+        this.value = value;
+    }
+
+    public int getX() {
+        return x;
+    }
+
+    public int getY() {
+        return y;
+    }
+
+    public int getValue() {
+        return value;
+    }
+
+    public boolean isTaken() {
+        return hasBeenTaken;
+    }
+
+    public void take() {
+        hasBeenTaken = true;
+    }
+
+
 }

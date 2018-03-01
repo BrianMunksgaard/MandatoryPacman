@@ -3,10 +3,12 @@ package org.example.pacman;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.util.Log;
 import android.widget.TextView;
 
 
 import java.util.ArrayList;
+import java.util.Random;
 
 /**
  *
@@ -17,6 +19,8 @@ public class Game {
     //context is a reference to the activity
     private Context context;
     private int points = 0; //how points do we have
+
+    private boolean coinsInitialized = false;
 
     //bitmap of the pacman_right
     private Bitmap pacBitmap;
@@ -43,7 +47,6 @@ public class Game {
         pacBitmapDown = BitmapFactory.decodeResource(context.getResources(), R.drawable.pacman_down);
 
         pacBitmap = pacBitmapLeft;
-
     }
 
     public void setGameView(GameView view)
@@ -59,6 +62,9 @@ public class Game {
         //reset the points
         points = 0;
         pointsView.setText(context.getResources().getString(R.string.points)+" "+points);
+
+        coinsInitialized = false;
+
         gameView.invalidate(); //redraw screen
     }
 
@@ -66,6 +72,24 @@ public class Game {
     {
         this.h = h;
         this.w = w;
+    }
+
+    public boolean initializeCoins() {
+        Log.d("Game - initialize coins","h = "+h+", w = "+w);
+        coins.clear();
+        Random rnd = new Random();
+        for (int i = 0; i < 15; i++) {
+            int rndHeight = 10 + rnd.nextInt(h - 9);
+            int rndWidth = 10 + rnd.nextInt(w - 9);
+
+            coins.add(new GoldCoin(rndWidth, rndHeight, 10));
+        }
+
+        return true;
+    }
+
+    public boolean areCoinsInitialized() {
+        return coinsInitialized;
     }
 
     public void movePacman(int pixels, Direction direction)

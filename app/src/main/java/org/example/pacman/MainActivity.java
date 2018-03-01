@@ -82,6 +82,7 @@ public class MainActivity extends Activity {
             return true;
         } else if (id == R.id.action_newGame) {
             Toast.makeText(this,"New Game clicked",Toast.LENGTH_LONG).show();
+            game.newGame();
             return true;
         }
         return super.onOptionsItemSelected(item);

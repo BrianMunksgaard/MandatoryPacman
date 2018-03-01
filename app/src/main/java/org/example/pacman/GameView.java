@@ -35,7 +35,7 @@ public class GameView extends View {
 
 	public GameView(Context context, AttributeSet attrs, int defStyleAttr)
 	{
-		super(context,attrs,defStyleAttr);
+		super(context, attrs, defStyleAttr);
 	}
 
 	//In the onDraw we put all our code that should be
@@ -48,12 +48,22 @@ public class GameView extends View {
 		//update the size for the canvas to the game.
 		game.setSize(h,w);
 		Log.d("GAMEVIEW","h = "+h+", w = "+w);
+
 		//Making a new paint object
-		Paint paint = new Paint();
 		canvas.drawColor(Color.WHITE); //clear entire canvas to white color
 
+		if (!game.areCoinsInitialized()) {
+			game.initializeCoins();
+		}
+
+		Paint paint = new Paint();
+		paint.setColor(Color.YELLOW);
+		for (GoldCoin gc : game.getCoins()) {
+			canvas.drawCircle(gc.getX(), gc.getY(), 15, paint);
+		}
+
 		//draw the pacman_right
-		canvas.drawBitmap(game.getPacBitmap(), game.getPacx(),game.getPacy(), paint);
+		canvas.drawBitmap(game.getPacBitmap(), game.getPacx(), game.getPacy(), paint);
 		//TODO loop through the list of goldcoins and draw them.
 		super.onDraw(canvas);
 	}
