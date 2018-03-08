@@ -180,10 +180,8 @@ public class Game {
         if (gc != null) {
             int drawX = gc.getLocation().x * gridRatio;
             int drawY = gc.getLocation().y * gridRatio;
-            double distance = distance(pacman.location.x, pacman.location.y, drawX, drawY);
-            double t = pacman.location.distanceTo(new Location(drawX, drawY));
             // Check that the distance between the pacman and the coin is within the limit
-            if (distance <= 30) {
+            if (pacman.location.distanceTo(new Location(drawX, drawY)) <= 30) {
                 points += gc.getValue();
                 gc.take();
                 coins.remove(gc);
@@ -230,37 +228,21 @@ public class Game {
         return gameOver;
     }
 
-    /**
-     * Calculate the distance between two x,y coordinates in a 2d grid system.
-     * @param x1
-     * @param y1
-     * @param x2
-     * @param y2
-     * @return
-     */
-    private double distance(int x1, int y1, int x2, int y2) {
-        // d = sqrt((x2 - x1)^2 + (y2 - y1)^2)
-        double x = Math.pow((x2 - x1), 2);
-        double y = Math.pow((y2 - y1),2);
-        return Math.sqrt(x + y);
-    }
-
     private boolean canChangeDirection(Direction direction) {
         boolean retValue = false;
         int gridX = pacman.location.x / gridRatio;
         int gridY = pacman.location.y / gridRatio;
         int drawX = gridX * gridRatio;
         int drawY = gridY * gridRatio;
-//        double distance = distance(pacman.location.x, pacman.location.y, drawX, drawY);
 
         if ((currentDirection == Direction.UP || currentDirection == Direction.DOWN)
                 && (direction == Direction.LEFT || direction == Direction.RIGHT)) {
              //Check for correct distance
-            retValue = pacman.location.equalsTo(new Location(drawX, drawY)); //distance == 0;
+            retValue = pacman.location.equalsTo(new Location(drawX, drawY));
         } else if ((currentDirection == Direction.LEFT || currentDirection == Direction.RIGHT)
                 && (direction == Direction.UP || direction == Direction.DOWN)) {
             // Check for correct distance
-            retValue = pacman.location.equalsTo(new Location(drawX, drawY)); //distance == 0;
+            retValue = pacman.location.equalsTo(new Location(drawX, drawY));
         }
 
         return retValue;
