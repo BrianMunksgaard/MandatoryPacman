@@ -5,9 +5,13 @@ import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
+import android.graphics.RectF;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.view.View;
+import android.widget.Toast;
+
+import java.util.ArrayList;
 
 public class GameView extends View {
 
@@ -42,29 +46,44 @@ public class GameView extends View {
 	//drawn whenever we update the screen.
 	@Override
 	protected void onDraw(Canvas canvas) {
-		//Here we get the height and weight
-		h = canvas.getHeight();
-		w = canvas.getWidth();
-		//update the size for the canvas to the game.
-		game.setSize(h,w);
-		Log.d("GAMEVIEW","h = "+h+", w = "+w);
+		if (game.isGameOver()) {
+			Toast.makeText(this.getContext(),"GAME OVER!",Toast.LENGTH_LONG).show();
+		} else {
+			//Here we get the height and weight
+			h = canvas.getHeight();
+			w = canvas.getWidth();
+			//update the size for the canvas to the game.
+			game.setSize(h,w);
+//		Log.d("GAMEVIEW","h = "+h+", w = "+w);
 
-		//Making a new paint object
-		canvas.drawColor(Color.WHITE); //clear entire canvas to white color
+			//Making a new paint object
+			canvas.drawColor(Color.WHITE); //clear entire canvas to white color
 
-		if (!game.areCoinsInitialized()) {
-			game.initializeCoins();
+			if (!game.areCoinsInitialized()) {
+				game.initializeCoins();
+			}
+
+			Paint paint = new Paint();
+			paint.setColor(Color.YELLOW);
+			//TODO loop through the list of goldcoins and draw them.
+			Log.d("Number of coins: ", "" + game.getCoins().size());
+			ArrayList<GoldCoin> coinsLeft = game.getCoins();
+			if (coinsLeft.size() > 0) {
+				for (GoldCoin gc : coinsLeft) {
+					int drawX = gc.getX() * game.getGridRatio();
+					int drawY = gc.getY() * game.getGridRatio();
+					if (!gc.isTaken()) {
+						canvas.drawCircle(drawX + 50, drawY + 50, 20, paint);
+					}
+				}
+			}
+
+			//draw the pacman_right
+			int pacX = game.getPacx();// * game.getGridRatio();
+			int pacY = game.getPacy();// * game.getGridRatio();
+			canvas.drawBitmap(game.getPacBitmap(), pacX, pacY, paint);
+//		canvas.drawBitmap(game.getPacBitmap(), null, new RectF(game.getPacx(), game.getPacy(), game.getPacx() + 80, game.getPacy() + 80), paint);
 		}
-
-		Paint paint = new Paint();
-		paint.setColor(Color.YELLOW);
-		for (GoldCoin gc : game.getCoins()) {
-			canvas.drawCircle(gc.getX(), gc.getY(), 15, paint);
-		}
-
-		//draw the pacman_right
-		canvas.drawBitmap(game.getPacBitmap(), game.getPacx(), game.getPacy(), paint);
-		//TODO loop through the list of goldcoins and draw them.
 		super.onDraw(canvas);
 	}
 

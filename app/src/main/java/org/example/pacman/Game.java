@@ -8,7 +8,6 @@ import android.widget.TextView;
 
 
 import java.util.ArrayList;
-import java.util.Random;
 
 /**
  *
@@ -16,11 +15,20 @@ import java.util.Random;
  */
 
 public class Game {
+
     //context is a reference to the activity
     private Context context;
     private int points = 0; //how points do we have
 
+    boolean gameOver = false;
+
     private boolean coinsInitialized = false;
+
+    // Game grid
+    private final int gridRatio = 100;
+    private GoldCoin[][] gameGrid;
+    private int gridHeight = 0;
+    private int gridWidth = 0;
 
     //bitmap of the pacman_right
     private Bitmap pacBitmap;
@@ -54,7 +62,6 @@ public class Game {
         this.gameView = view;
     }
 
-    //TODO initialize goldcoins also here
     public void newGame()
     {
         pacx = 50;
@@ -62,6 +69,7 @@ public class Game {
         //reset the points
         points = 0;
         pointsView.setText(context.getResources().getString(R.string.points)+" "+points);
+        gameOver = false;
 
         coinsInitialized = false;
 
@@ -74,16 +82,29 @@ public class Game {
         this.w = w;
     }
 
-    public boolean initializeCoins() {
-        Log.d("Game - initialize coins","h = "+h+", w = "+w);
-        coins.clear();
-        Random rnd = new Random();
-        for (int i = 0; i < 15; i++) {
-            int rndHeight = 10 + rnd.nextInt(h - 9);
-            int rndWidth = 10 + rnd.nextInt(w - 9);
+    public void initializePhysicalGrid() {
+        gridHeight = h / gridRatio;
+        gridWidth = w / gridRatio;
+//        Log.d("initialiseGrid", "gridHeigh: " + gridHeight + ", gridWidth: " + gridWidth);
+        gameGrid = new GoldCoin[gridHeight][gridWidth];
+    }
 
-            coins.add(new GoldCoin(rndWidth, rndHeight, 10));
+    public boolean initializeCoins() {
+//        Log.d("Game - initialize coins","h = "+h+", w = "+w);
+        if (gameGrid == null) {
+            initializePhysicalGrid();
         }
+        coins.clear();
+
+        for (int h = 0; h < gridHeight; h++) {
+            for (int w = 0; w < gridWidth; w++) {
+                GoldCoin gc = new GoldCoin(w, h, 10);
+                gameGrid[h][w] = gc;
+                coins.add(gc);
+            }
+        }
+
+        coinsInitialized = true;
 
         return true;
     }
@@ -124,7 +145,27 @@ public class Game {
 
     public void doCollisionCheck()
     {
+        int gridX = pacx / gridRatio;
+        int gridY = pacy / gridRatio;
+        GoldCoin gc = gameGrid[gridY][gridX];
+        Log.d("collisionCheck", "grid & coin:" + gridX + "," + gridY + "->" + gc);
+        if (gc != null) {
+            int drawX = gc.getX() * gridRatio;
+            int drawY = gc.getY() * gridRatio;
+            double distance = distance(pacx, pacy, drawX, drawY);
+            Log.d("collisionCheck", "pacx,pacy:" + pacx + "," + pacy + " | drawX,drawY:" + drawX + "," + drawY + " | distance:" + distance);
+            if (distance <= 20) {
+                points += gc.getValue();
+                gc.take();
+                coins.remove(gc);
+                gameGrid[gridY][gridX] = null;
+                pointsView.setText(context.getResources().getString(R.string.points)+" "+points);
 
+                if (coins.size() == 0) {
+                    gameOver = true;
+                }
+            }
+        }
     }
 
     public int getPacx()
@@ -149,8 +190,21 @@ public class Game {
 
     public Bitmap getPacBitmap()
     {
-        return pacBitmap;
+        return Bitmap.createScaledBitmap(pacBitmap, gridRatio, gridRatio, true);
     }
 
+    public int getGridRatio() {
+        return gridRatio;
+    }
 
+    public boolean isGameOver() {
+        return gameOver;
+    }
+
+    private double distance(int x1, int y1, int x2, int y2) {
+        // d = sqrt((x2 - x1)^2 + (y2 - y1)^2)
+        double x = Math.pow((x2 - x1), 2);
+        double y = Math.pow((y2 - y1),2);
+        return Math.sqrt(x + y);
+    }
 }
