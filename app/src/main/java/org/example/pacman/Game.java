@@ -124,31 +124,31 @@ public class Game {
             currentDirection = direction;
         }
 
-        int _pacx = pacman.getX();
-        int _pacy = pacman.getY();
+        int _pacx = pacman.location.x;
+        int _pacy = pacman.location.y;
 
         switch(currentDirection) {
             case UP:
-                if (pacman.getY() - pixels  > 0)
-                    pacman.setY(pacman.getY() - pixels);
+                if (pacman.location.y - pixels  > 0)
+                    pacman.updateLocation(pacman.location.x, pacman.location.y - pixels);
                 break;
             case DOWN:
-                if (pacman.getY() + pixels + pacman.getCurrentBitmap().getHeight() < h)
-                    pacman.setY(pacman.getY() + pixels);
+                if (pacman.location.y + pixels + pacman.getCurrentBitmap().getHeight() < h)
+                    pacman.updateLocation(pacman.location.x, pacman.location.y + pixels);
                 break;
             case LEFT:
-                if (pacman.getX() - pixels  > 0)
-                    pacman.setX(pacman.getX() - pixels);
+                if (pacman.location.x - pixels  > 0)
+                    pacman.updateLocation(pacman.location.x - pixels, pacman.location.y);
                 break;
             case RIGHT:
-                if (pacman.getX() + pixels + pacman.getCurrentBitmap().getWidth() < w)
-                    pacman.setX(pacman.getX() + pixels);
+                if (pacman.location.x + pixels + pacman.getCurrentBitmap().getWidth() < w)
+                    pacman.updateLocation(pacman.location.x + pixels, pacman.location.y);
                 break;
             case STOP:
                 break;
         }
 
-        if(pacman.getX() != _pacx || pacman.getY() != _pacy) {
+        if(pacman.location.x != _pacx || pacman.location.y != _pacy) {
             doCollisionCheck();
             pacman.setPacBitmap(currentDirection);
             gameView.invalidate();
@@ -157,20 +157,31 @@ public class Game {
 
     public void moveEnemy(Ghost enemy, int pixel) {
 
+        Location loc = enemy.location;
+        int startX = loc.x;
+        int startY = loc.y;
+
+        if (loc.x != startX || loc.y != startY) {
+            doCollisionCheck();
+            enemy.updateLocation(0, 0);
+            gameView.invalidate();
+        }
+
     }
 
     public void doCollisionCheck()
     {
         // Calculate the grid coordinates for the pacman
-        int gridX = pacman.getX() / gridRatio;
-        int gridY = pacman.getY() / gridRatio;
+        int gridX = pacman.location.x / gridRatio;
+        int gridY = pacman.location.y / gridRatio;
         // Find the coin at the same grid location as the pacman
         GoldCoin gc = gameGrid[gridY][gridX];
         // If there is a coin here, figure out if we should take it
         if (gc != null) {
-            int drawX = gc.getX() * gridRatio;
-            int drawY = gc.getY() * gridRatio;
-            double distance = distance(pacman.getX(), pacman.getY(), drawX, drawY);
+            int drawX = gc.getLocation().x * gridRatio;
+            int drawY = gc.getLocation().y * gridRatio;
+            double distance = distance(pacman.location.x, pacman.location.y, drawX, drawY);
+            double t = pacman.location.distanceTo(new Location(drawX, drawY));
             // Check that the distance between the pacman and the coin is within the limit
             if (distance <= 30) {
                 points += gc.getValue();
@@ -188,14 +199,8 @@ public class Game {
         // TODO Do collision check for enemies as well
     }
 
-    public int getPacx()
-    {
-        return pacman.getX();
-    }
-
-    public int getPacy()
-    {
-        return pacman.getY();
+    public Location getPacmanLocation() {
+        return pacman.location;
     }
 
     public int getPoints()
@@ -242,20 +247,20 @@ public class Game {
 
     private boolean canChangeDirection(Direction direction) {
         boolean retValue = false;
-        int gridX = pacman.getX() / gridRatio;
-        int gridY = pacman.getY() / gridRatio;
+        int gridX = pacman.location.x / gridRatio;
+        int gridY = pacman.location.y / gridRatio;
         int drawX = gridX * gridRatio;
         int drawY = gridY * gridRatio;
-        double distance = distance(pacman.getX(), pacman.getY(), drawX, drawY);
+//        double distance = distance(pacman.location.x, pacman.location.y, drawX, drawY);
 
         if ((currentDirection == Direction.UP || currentDirection == Direction.DOWN)
                 && (direction == Direction.LEFT || direction == Direction.RIGHT)) {
              //Check for correct distance
-            retValue = distance == 0;
+            retValue = pacman.location.equalsTo(new Location(drawX, drawY)); //distance == 0;
         } else if ((currentDirection == Direction.LEFT || currentDirection == Direction.RIGHT)
                 && (direction == Direction.UP || direction == Direction.DOWN)) {
             // Check for correct distance
-            retValue = distance == 0;
+            retValue = pacman.location.equalsTo(new Location(drawX, drawY)); //distance == 0;
         }
 
         return retValue;

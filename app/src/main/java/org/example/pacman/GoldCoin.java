@@ -8,23 +8,17 @@ package org.example.pacman;
 
 public class GoldCoin {
 
-    private int x;
-    private int y;
+    private Location location;
     private int value;
     private boolean hasBeenTaken = false;
 
     public GoldCoin(int x, int y, int value) {
-        this.x = x;
-        this.y = y;
+        location = new Location(x, y);
         this.value = value;
     }
 
-    public int getX() {
-        return x;
-    }
-
-    public int getY() {
-        return y;
+    public Location getLocation() {
+        return location;
     }
 
     public int getValue() {

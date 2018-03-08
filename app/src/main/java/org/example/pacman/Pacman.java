@@ -18,12 +18,11 @@ public class Pacman {
     private Bitmap pacBitmapUp;
     private Bitmap pacBitmapDown;
 
-    private int pacx, pacy;
+    Location location;
 
     public Pacman(Context context, int x, int y) {
         this.context = context;
-        pacx = x;
-        pacy = y;
+        location = new Location(x, y);
 
         pacBitmapLeft = BitmapFactory.decodeResource(context.getResources(), R.drawable.pacman_left);
         pacBitmapRight = BitmapFactory.decodeResource(context.getResources(), R.drawable.pacman_right);
@@ -33,20 +32,8 @@ public class Pacman {
         pacBitmap = pacBitmapLeft;
     }
 
-    public int getX() {
-        return pacx;
-    }
-
-    public void setX(int x) {
-        pacx = x;
-    }
-
-    public int getY() {
-        return pacy;
-    }
-
-    public void setY(int y) {
-        pacy = y;
+    public void updateLocation(int x, int y) {
+        location.update(x, y);
     }
 
     public void setPacBitmap(Direction direction) {

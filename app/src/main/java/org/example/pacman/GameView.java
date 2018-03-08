@@ -70,8 +70,8 @@ public class GameView extends View {
 			ArrayList<GoldCoin> coinsLeft = game.getCoins();
 			if (coinsLeft.size() > 0) {
 				for (GoldCoin gc : coinsLeft) {
-					int drawX = gc.getX() * game.getGridRatio();
-					int drawY = gc.getY() * game.getGridRatio();
+					int drawX = gc.getLocation().x * game.getGridRatio();
+					int drawY = gc.getLocation().y * game.getGridRatio();
 					if (!gc.isTaken()) {
 						canvas.drawCircle(drawX + 50, drawY + 50, 20, paint);
 					}
@@ -80,13 +80,12 @@ public class GameView extends View {
 
 			ArrayList<Ghost> enemies = game.getEnemies();
 			for (Ghost ghost : enemies) {
-				canvas.drawBitmap(ghost.getGhostBitmap(), ghost.getX(), ghost.getY(), paint);
+				canvas.drawBitmap(ghost.getGhostBitmap(), ghost.location.x, ghost.location.y, paint);
 			}
 
 			//draw the pacman_right
-			int pacX = game.getPacx();// * game.getGridRatio();
-			int pacY = game.getPacy();// * game.getGridRatio();
-			canvas.drawBitmap(game.getPacBitmap(), pacX, pacY, paint);
+			Location pacmanLocation = game.getPacmanLocation();
+			canvas.drawBitmap(game.getPacBitmap(), pacmanLocation.x, pacmanLocation.y, paint);
 //		canvas.drawBitmap(game.getPacBitmap(), null, new RectF(game.getPacx(), game.getPacy(), game.getPacx() + 80, game.getPacy() + 80), paint);
 		}
 		super.onDraw(canvas);

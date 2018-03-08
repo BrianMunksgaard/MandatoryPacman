@@ -14,23 +14,17 @@ public class Ghost {
 
     private Bitmap ghostBitmap;
 
-    private int x;
-    private int y;
+    Location location;
 
     public Ghost(Context context, int x, int y) {
         this.context = context;
-        this.x = x;
-        this.y = y;
+        location = new Location(x, y);
 
         ghostBitmap = BitmapFactory.decodeResource(context.getResources(), R.drawable.ic_android_black_36dp);
     }
 
-    public int getX() {
-        return x;
-    }
-
-    public int getY() {
-        return y;
+    public void updateLocation(int x, int y) {
+        location.update(x, y);
     }
 
     public Bitmap getGhostBitmap() {
