@@ -5,14 +5,32 @@
     android:layout_height="match_parent"
     tools:context="org.example.pacman.MainActivity" >
 
-    <TextView
-        android:id="@+id/points"
-        android:textSize="24sp"
-        android:layout_width="wrap_content"
+    <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:tools="http://schemas.android.com/tools"
+        android:id="@+id/information"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="@string/points"
-        />
+        android:orientation="horizontal"
+        android:weightSum="2">
 
+        <TextView
+            android:id="@+id/points"
+            android:textSize="24sp"
+            android:layout_width="0dp"
+            android:layout_weight="1"
+            android:layout_height="wrap_content"
+            android:text="@string/points"
+            />
+
+        <TextView
+            android:id="@+id/gameTime"
+            android:textSize="24sp"
+            android:layout_width="0dp"
+            android:layout_weight="1"
+            android:layout_height="wrap_content"
+            android:text="@string/gameTime"
+            />
+    </LinearLayout>
 
     <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
         xmlns:tools="http://schemas.android.com/tools"
@@ -66,7 +84,7 @@ a full package path-->
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:layout_gravity="fill"
-        android:layout_below="@+id/points"
+        android:layout_below="@+id/information"
         android:layout_above="@+id/actionBar"
         >
     </org.example.pacman.GameView>

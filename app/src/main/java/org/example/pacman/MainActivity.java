@@ -7,7 +7,6 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import java.util.Timer;
 import java.util.TimerTask;
@@ -19,7 +18,13 @@ public class MainActivity extends Activity {
     //reference to the game class.
     Game game;
     private Timer myTimer;
+    private Timer gameTimer;
+    private boolean isRunning = true;
+    private int gameLength = 1 * 60;
+    private int timeLeft;
     private Direction currentDirection = Direction.STOP;
+
+    private Menu myMenu;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -27,6 +32,8 @@ public class MainActivity extends Activity {
         //saying we want the game to run in one mode only
         setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
         setContentView(R.layout.activity_main);
+
+        timeLeft = gameLength;
 
         gameView =  findViewById(R.id.gameView);
         TextView textView = findViewById(R.id.points);
@@ -82,12 +89,22 @@ public class MainActivity extends Activity {
             }
 
         }, 0, 50); //0 indicates we start now, 100 is the number of miliseconds between each call
+
+        gameTimer = new Timer();
+        gameTimer.schedule(new TimerTask() {
+            @Override
+            public void run() {
+                gameRunning();
+            }
+
+        }, 0, 1000);
     }
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
         getMenuInflater().inflate(R.menu.main, menu);
+        myMenu = menu;
         return true;
     }
 
@@ -103,11 +120,43 @@ public class MainActivity extends Activity {
         } else if (id == R.id.action_newGame) {
 //            Toast.makeText(this,"New Game clicked",Toast.LENGTH_LONG).show();
             currentDirection = Direction.STOP;
+            timeLeft = gameLength;
+            isRunning = true;
             game.newGame();
+            return true;
+        } else if (id == R.id.action_continue) {
+            isRunning = true;
+            myMenu.findItem(R.id.action_pause).setEnabled(true);
+            item.setEnabled(false);
+            return true;
+        } else if (id == R.id.action_pause) {
+            isRunning = false;
+            myMenu.findItem(R.id.action_continue).setEnabled(true);
+            item.setEnabled(false);
             return true;
         }
         return super.onOptionsItemSelected(item);
     }
+
+    private void gameRunning() {
+        this.runOnUiThread(GameTimer_Tick);
+    }
+
+    private Runnable GameTimer_Tick =new Runnable() {
+        public void run() {
+            if (!game.isGameOver() && isRunning)
+            {
+                timeLeft--;
+                TextView gameTimerView = findViewById(R.id.gameTime);
+                gameTimerView.setText("Time remaining: " + timeLeft);
+                if (timeLeft == 0) {
+                    game.gameOver = true;
+                    isRunning = false;
+                    gameView.invalidate();
+                }
+            }
+        }
+    };
 
     private void TimerMethod()
     {
@@ -121,7 +170,7 @@ public class MainActivity extends Activity {
 
     private Runnable Timer_Tick = new Runnable() {
         public void run() {
-            if (!game.isGameOver())
+            if (!game.isGameOver() && isRunning)
             {
                 game.movePacman(10, currentDirection);
             }
