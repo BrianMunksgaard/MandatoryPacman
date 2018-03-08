@@ -66,7 +66,7 @@ public class GameView extends View {
 			Paint paint = new Paint();
 			paint.setColor(Color.YELLOW);
 			//TODO loop through the list of goldcoins and draw them.
-			Log.d("Number of coins: ", "" + game.getCoins().size());
+//			Log.d("Number of coins: ", "" + game.getCoins().size());
 			ArrayList<GoldCoin> coinsLeft = game.getCoins();
 			if (coinsLeft.size() > 0) {
 				for (GoldCoin gc : coinsLeft) {

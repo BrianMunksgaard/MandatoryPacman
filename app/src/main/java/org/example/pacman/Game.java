@@ -8,6 +8,8 @@ import android.widget.TextView;
 
 
 import java.util.ArrayList;
+import java.util.Timer;
+import java.util.TimerTask;
 
 /**
  *
@@ -45,6 +47,8 @@ public class Game {
     private GameView gameView;
     private int h,w; //height and width of screen
 
+    private Direction currentDirection = Direction.STOP;
+
     public Game(Context context, TextView view)
     {
         this.context = context;
@@ -70,6 +74,8 @@ public class Game {
         points = 0;
         pointsView.setText(context.getResources().getString(R.string.points)+" "+points);
         gameOver = false;
+
+        currentDirection = Direction.STOP;
 
         coinsInitialized = false;
 
@@ -115,10 +121,19 @@ public class Game {
 
     public void movePacman(int pixels, Direction direction)
     {
+        boolean movementAllowed = true;
+        if (isDirectionChange(direction)) {
+            movementAllowed = canChangeDirection(direction);
+        }
+
+        if (movementAllowed) {
+            currentDirection = direction;
+        }
+
         int _pacx = pacx;
         int _pacy = pacy;
 
-        switch(direction) {
+        switch(currentDirection) {
             case UP:
                 if (pacy - pixels  > 0) pacy -= pixels;
                 pacBitmap = pacBitmapUp;
@@ -135,6 +150,8 @@ public class Game {
                 if (pacx + pixels + pacBitmap.getWidth() < w)  pacx += pixels;
                 pacBitmap = pacBitmapRight;
                 break;
+            case STOP:
+                break;
         }
 
         if(pacx != _pacx || pacy != _pacy) {
@@ -145,16 +162,18 @@ public class Game {
 
     public void doCollisionCheck()
     {
+        // Calculate the grid coordinates for the pacman
         int gridX = pacx / gridRatio;
         int gridY = pacy / gridRatio;
+        // Find the coin at the same grid location as the pacman
         GoldCoin gc = gameGrid[gridY][gridX];
-        Log.d("collisionCheck", "grid & coin:" + gridX + "," + gridY + "->" + gc);
+        // If there is a coin here, figure out if we should take it
         if (gc != null) {
             int drawX = gc.getX() * gridRatio;
             int drawY = gc.getY() * gridRatio;
             double distance = distance(pacx, pacy, drawX, drawY);
-            Log.d("collisionCheck", "pacx,pacy:" + pacx + "," + pacy + " | drawX,drawY:" + drawX + "," + drawY + " | distance:" + distance);
-            if (distance <= 20) {
+            // Check that the distance between the pacman and the coin is within the limit
+            if (distance <= 30) {
                 points += gc.getValue();
                 gc.take();
                 coins.remove(gc);
@@ -201,10 +220,50 @@ public class Game {
         return gameOver;
     }
 
+    /**
+     * Calculate the distance between two x,y coordinates in a 2d grid system.
+     * @param x1
+     * @param y1
+     * @param x2
+     * @param y2
+     * @return
+     */
     private double distance(int x1, int y1, int x2, int y2) {
         // d = sqrt((x2 - x1)^2 + (y2 - y1)^2)
         double x = Math.pow((x2 - x1), 2);
         double y = Math.pow((y2 - y1),2);
         return Math.sqrt(x + y);
+    }
+
+    private boolean canChangeDirection(Direction direction) {
+        boolean retValue = false;
+        int gridX = pacx / gridRatio;
+        int gridY = pacy / gridRatio;
+        int drawX = gridX * gridRatio;
+        int drawY = gridY * gridRatio;
+        double distance = distance(pacx, pacy, drawX, drawY);
+
+        if ((currentDirection == Direction.UP || currentDirection == Direction.DOWN)
+                && (direction == Direction.LEFT || direction == Direction.RIGHT)) {
+             //Check for correct distance
+            retValue = distance == 0;
+        } else if ((currentDirection == Direction.LEFT || currentDirection == Direction.RIGHT)
+                && (direction == Direction.UP || direction == Direction.DOWN)) {
+            // Check for correct distance
+            retValue = distance == 0;
+        }
+
+        return retValue;
+    }
+
+    public boolean isDirectionChange(Direction direction) {
+        if ((currentDirection == Direction.UP || currentDirection == Direction.DOWN)
+                && (direction == Direction.LEFT || direction == Direction.RIGHT)) {
+            return true;
+        } else if ((currentDirection == Direction.LEFT || currentDirection == Direction.RIGHT)
+                && (direction == Direction.UP || direction == Direction.DOWN)) {
+            return true;
+        }
+        return false;
     }
 }
