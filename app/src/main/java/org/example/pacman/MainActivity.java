@@ -173,6 +173,7 @@ public class MainActivity extends Activity {
             if (!game.isGameOver() && isRunning)
             {
                 game.movePacman(10, currentDirection);
+                game.moveEnemies(10);
             }
         }
     };

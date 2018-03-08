@@ -155,18 +155,26 @@ public class Game {
         }
     }
 
-    public void moveEnemy(Ghost enemy, int pixel) {
+    public void moveEnemies(int pixels) {
 
-        Location loc = enemy.location;
-        int startX = loc.x;
-        int startY = loc.y;
+        // TODO Implement proper movement for enemies
+        // TODO Maybe a vision distance to spot the player?
+        for (Ghost enemy : getEnemies()) {
+            Location loc = enemy.location;
+            int startX = loc.x;
+            int startY = loc.y;
 
-        if (loc.x != startX || loc.y != startY) {
-            doCollisionCheck();
-            enemy.updateLocation(0, 0);
-            gameView.invalidate();
+            int newX = startX + pixels;
+            int newY = startY;
+            if (newX + enemy.getGhostBitmap().getHeight() < w) {
+                enemy.updateLocation(newX, newY);
+            }
+
+            if (enemy.location.x != startX || enemy.location.y != startY) {
+                doCollisionCheckEnemy(enemy);
+                gameView.invalidate();
+            }
         }
-
     }
 
     public void doCollisionCheck()
@@ -194,16 +202,23 @@ public class Game {
             }
         }
 
-        // TODO Do collision check for enemies as well
+        for (Ghost enemy : getEnemies()) {
+            if (enemy.location.equalsTo(pacman.location)) {
+                gameOver = true;
+                break;
+            }
+        }
+    }
+
+    public void doCollisionCheckEnemy(Ghost ghost) {
+        Location pacmanLocation = pacman.location;
+        if (ghost.location.equalsTo(pacmanLocation)) {
+            gameOver = true;
+        }
     }
 
     public Location getPacmanLocation() {
         return pacman.location;
-    }
-
-    public int getPoints()
-    {
-        return points;
     }
 
     public ArrayList<GoldCoin> getCoins()
