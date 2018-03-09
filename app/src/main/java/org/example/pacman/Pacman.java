@@ -20,6 +20,8 @@ public class Pacman {
 
     Location location;
 
+    int speed = 10;
+
     public Pacman(Context context, int x, int y) {
         this.context = context;
         location = new Location(x, y);

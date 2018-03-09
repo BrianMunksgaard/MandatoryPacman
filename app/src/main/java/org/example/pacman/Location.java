@@ -6,17 +6,17 @@ package org.example.pacman;
 
 public class Location {
 
-    int x;
-    int y;
+    int pixelX;
+    int pixelY;
 
     public Location(int x, int y) {
-        this.x = x;
-        this.y = y;
+        pixelX = x;
+        pixelY = y;
     }
 
     public void update(int x, int y) {
-        this.x = x;
-        this.y = y;
+        pixelX = x;
+        pixelY = y;
     }
 
     public boolean equalsTo(Location comparer) {
@@ -24,8 +24,8 @@ public class Location {
     }
 
     public double distanceTo(Location target) {
-        double distx = Math.pow((target.x - x), 2);
-        double disty = Math.pow((target.y - y),2);
+        double distx = Math.pow((target.pixelX - pixelX), 2);
+        double disty = Math.pow((target.pixelY - pixelY),2);
         return Math.sqrt(distx + disty);
     }
 

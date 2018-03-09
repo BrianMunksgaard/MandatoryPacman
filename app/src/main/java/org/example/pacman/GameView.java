@@ -5,9 +5,7 @@ import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
-import android.graphics.RectF;
 import android.util.AttributeSet;
-import android.util.Log;
 import android.view.View;
 import android.widget.Toast;
 
@@ -64,8 +62,8 @@ public class GameView extends View {
 		ArrayList<GoldCoin> coinsLeft = game.getCoins();
 		if (coinsLeft.size() > 0) {
 			for (GoldCoin gc : coinsLeft) {
-				int drawX = gc.getLocation().x * game.getGridRatio();
-				int drawY = gc.getLocation().y * game.getGridRatio();
+				int drawX = gc.getLocation().pixelX;
+				int drawY = gc.getLocation().pixelY;
 				if (!gc.isTaken()) {
 					canvas.drawCircle(drawX + 50, drawY + 50, 20, paint);
 				}
@@ -74,12 +72,12 @@ public class GameView extends View {
 
 		ArrayList<Ghost> enemies = game.getEnemies();
 		for (Ghost ghost : enemies) {
-			canvas.drawBitmap(ghost.getGhostBitmap(), ghost.location.x, ghost.location.y, paint);
+			canvas.drawBitmap(ghost.getGhostBitmap(), ghost.location.pixelX, ghost.location.pixelY, paint);
 		}
 
 		//draw the pacman_right
 		Location pacmanLocation = game.getPacmanLocation();
-		canvas.drawBitmap(game.getPacBitmap(), pacmanLocation.x, pacmanLocation.y, paint);
+		canvas.drawBitmap(game.getPacBitmap(), pacmanLocation.pixelX, pacmanLocation.pixelY, paint);
 
 		if (game.isGameOver()) {
 			Toast.makeText(this.getContext(), "GAME OVER!", Toast.LENGTH_LONG).show();

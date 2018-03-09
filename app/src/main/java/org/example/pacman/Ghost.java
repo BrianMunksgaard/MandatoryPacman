@@ -16,6 +16,11 @@ public class Ghost {
 
     Location location;
 
+    private Direction currentDireciton;
+    private int noOfStepsLeft = 0;
+
+    int speed = 10;
+
     public Ghost(Context context, int x, int y) {
         this.context = context;
         location = new Location(x, y);
@@ -25,6 +30,18 @@ public class Ghost {
 
     public void updateLocation(int x, int y) {
         location.update(x, y);
+    }
+
+    public void setDirection(Direction direction) {
+        currentDireciton = direction;
+    }
+
+    public int getNoOfStepsLeft() {
+        return noOfStepsLeft;
+    }
+
+    public void setNoOfStepsLeft(int newValue) {
+        noOfStepsLeft = newValue;
     }
 
     public Bitmap getGhostBitmap() {

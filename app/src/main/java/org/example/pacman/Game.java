@@ -2,14 +2,11 @@ package org.example.pacman;
 
 import android.content.Context;
 import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.util.Log;
 import android.widget.TextView;
 
 
 import java.util.ArrayList;
-import java.util.Timer;
-import java.util.TimerTask;
 
 /**
  *
@@ -34,8 +31,8 @@ public class Game {
     private ArrayList<GoldCoin> coins = new ArrayList<>();
 
     // Game grid
-    private final int gridRatio = 100;
-    private GoldCoin[][] gameGrid;
+    private static final int gridRatio = 100;
+    private Node[][] gameGrid;
     private int gridHeight = 0;
     private int gridWidth = 0;
 
@@ -70,9 +67,6 @@ public class Game {
 
         coinsInitialized = false;
 
-        Ghost enemy = new Ghost(this.context, 500, 800);
-        enemies.add(enemy);
-
         gameView.invalidate(); //redraw screen
     }
 
@@ -85,24 +79,34 @@ public class Game {
     public void initializePhysicalGrid() {
         gridHeight = h / gridRatio;
         gridWidth = w / gridRatio;
-//        Log.d("initialiseGrid", "gridHeigh: " + gridHeight + ", gridWidth: " + gridWidth);
-        gameGrid = new GoldCoin[gridHeight][gridWidth];
+        gameGrid = new Node[gridHeight][gridWidth];
+        for (int x = 0; x < gridWidth; x++) {
+            for (int y = 0; y < gridHeight; y++) {
+                gameGrid[y][x] = new Node();
+            }
+        }
     }
 
     public boolean initializeCoins() {
-//        Log.d("Game - initialize coins","h = "+h+", w = "+w);
         if (gameGrid == null) {
             initializePhysicalGrid();
         }
         coins.clear();
 
-        for (int h = 0; h < gridHeight; h++) {
-            for (int w = 0; w < gridWidth; w++) {
-                GoldCoin gc = new GoldCoin(w, h, 10);
-                gameGrid[h][w] = gc;
+        for (int height = 0; height < gridHeight; height++) {
+            for (int width = 0; width < gridWidth; width++) {
+                int x = width * gridRatio;
+                int y = height * gridRatio;
+                GoldCoin gc = new GoldCoin(x, y, 10);
+                gameGrid[height][width].setCoin(gc);
                 coins.add(gc);
             }
         }
+
+        // TODO Place the enemy correct in the grid
+        Ghost enemy = new Ghost(this.context, 500, 800);
+        enemies.add(enemy);
+        gameGrid[8][5].addEmeny(enemy);
 
         coinsInitialized = true;
 
@@ -113,7 +117,7 @@ public class Game {
         return coinsInitialized;
     }
 
-    public void movePacman(int pixels, Direction direction)
+    public void movePacman(Direction direction)
     {
         boolean movementAllowed = true;
         if (isDirectionChange(direction)) {
@@ -124,53 +128,56 @@ public class Game {
             currentDirection = direction;
         }
 
-        int _pacx = pacman.location.x;
-        int _pacy = pacman.location.y;
+        int _pacx = pacman.location.pixelX;
+        int _pacy = pacman.location.pixelY;
 
         switch(currentDirection) {
             case UP:
-                if (pacman.location.y - pixels  > 0)
-                    pacman.updateLocation(pacman.location.x, pacman.location.y - pixels);
+                if (pacman.location.pixelY - pacman.speed  > 0)
+                    pacman.updateLocation(pacman.location.pixelX, pacman.location.pixelY - pacman.speed);
                 break;
             case DOWN:
-                if (pacman.location.y + pixels + pacman.getCurrentBitmap().getHeight() < h)
-                    pacman.updateLocation(pacman.location.x, pacman.location.y + pixels);
+                if (pacman.location.pixelY + pacman.speed + pacman.getCurrentBitmap().getHeight() < h)
+                    pacman.updateLocation(pacman.location.pixelX, pacman.location.pixelY + pacman.speed);
                 break;
             case LEFT:
-                if (pacman.location.x - pixels  > 0)
-                    pacman.updateLocation(pacman.location.x - pixels, pacman.location.y);
+                if (pacman.location.pixelX - pacman.speed  > 0)
+                    pacman.updateLocation(pacman.location.pixelX - pacman.speed, pacman.location.pixelY);
                 break;
             case RIGHT:
-                if (pacman.location.x + pixels + pacman.getCurrentBitmap().getWidth() < w)
-                    pacman.updateLocation(pacman.location.x + pixels, pacman.location.y);
+                if (pacman.location.pixelX + pacman.speed + pacman.getCurrentBitmap().getWidth() < w)
+                    pacman.updateLocation(pacman.location.pixelX + pacman.speed, pacman.location.pixelY);
                 break;
             case STOP:
                 break;
         }
 
-        if(pacman.location.x != _pacx || pacman.location.y != _pacy) {
+        if(pacman.location.pixelX != _pacx || pacman.location.pixelY != _pacy) {
             doCollisionCheck();
             pacman.setPacBitmap(currentDirection);
             gameView.invalidate();
         }
     }
 
-    public void moveEnemies(int pixels) {
+    public void moveEnemies() {
 
-        // TODO Implement proper movement for enemies
-        // TODO Maybe a vision distance to spot the player?
+        /**
+         * TODO
+         *  If enemy.getNoOfStepsLeft() == 0 then chose a new direction and set the no of steps to be taken in that direction
+         *  If enemy.getNoOfStepsLeft() > 0 then move a step i the enemy.getCurrentDireciton() and set enemy.setNoOfStepsLeft(enemy.getNoOfStepsLeft() - 1)
+         */
         for (Ghost enemy : getEnemies()) {
             Location loc = enemy.location;
-            int startX = loc.x;
-            int startY = loc.y;
+            int startX = loc.pixelX;
+            int startY = loc.pixelY;
 
-            int newX = startX + pixels;
+            int newX = startX + enemy.speed;
             int newY = startY;
             if (newX + enemy.getGhostBitmap().getHeight() < w) {
                 enemy.updateLocation(newX, newY);
             }
 
-            if (enemy.location.x != startX || enemy.location.y != startY) {
+            if (enemy.location.pixelX != startX || enemy.location.pixelY != startY) {
                 doCollisionCheckEnemy(enemy);
                 gameView.invalidate();
             }
@@ -180,20 +187,18 @@ public class Game {
     public void doCollisionCheck()
     {
         // Calculate the grid coordinates for the pacman
-        int gridX = pacman.location.x / gridRatio;
-        int gridY = pacman.location.y / gridRatio;
+        int gridX = convertToGrid(pacman.location.pixelX);
+        int gridY = convertToGrid(pacman.location.pixelY);
         // Find the coin at the same grid location as the pacman
-        GoldCoin gc = gameGrid[gridY][gridX];
         // If there is a coin here, figure out if we should take it
-        if (gc != null) {
-            int drawX = gc.getLocation().x * gridRatio;
-            int drawY = gc.getLocation().y * gridRatio;
+        if (gameGrid[gridY][gridX].hasCoin()) {
+            GoldCoin gc = gameGrid[gridY][gridX].getCoin();
             // Check that the distance between the pacman and the coin is within the limit
-            if (pacman.location.distanceTo(new Location(drawX, drawY)) <= 30) {
+            if (pacman.location.distanceTo(gc.getLocation()) <= 30) {
                 points += gc.getValue();
                 gc.take();
                 coins.remove(gc);
-                gameGrid[gridY][gridX] = null;
+                gameGrid[gridY][gridX].removeCoin();
                 pointsView.setText(context.getResources().getString(R.string.points)+" "+points);
 
                 if (coins.size() == 0) {
@@ -235,7 +240,7 @@ public class Game {
         return Bitmap.createScaledBitmap(pacman.getCurrentBitmap(), gridRatio, gridRatio, true);
     }
 
-    public int getGridRatio() {
+    public static int getGridRatio() {
         return gridRatio;
     }
 
@@ -245,19 +250,26 @@ public class Game {
 
     private boolean canChangeDirection(Direction direction) {
         boolean retValue = false;
-        int gridX = pacman.location.x / gridRatio;
-        int gridY = pacman.location.y / gridRatio;
-        int drawX = gridX * gridRatio;
-        int drawY = gridY * gridRatio;
+        int drawX = convertToGrid(pacman.location.pixelX) * gridRatio;
+        int drawY = convertToGrid(pacman.location.pixelY) * gridRatio;
 
+//        Log.d("changeDirection", "pacx,pacy:" + pacman.location.pixelX + "," + pacman.location.pixelY + "|drawx,drawy:" + drawX + "," + drawY + "|w,h:" + w + "," + h + "|bitmap:" + pacman.getCurrentBitmap().getWidth() + "," + pacman.getCurrentBitmap().getHeight());
         if ((currentDirection == Direction.UP || currentDirection == Direction.DOWN)
                 && (direction == Direction.LEFT || direction == Direction.RIGHT)) {
              //Check for correct distance
-            retValue = pacman.location.equalsTo(new Location(drawX, drawY));
+            retValue = pacman.location.equalsTo(new Location(drawX, drawY))
+                    || pacman.location.pixelY == pacman.speed
+                    || pacman.location.pixelY + pacman.speed + pacman.getCurrentBitmap().getHeight() == h
+                    || (pacman.location.pixelX == pacman.speed && pacman.location.pixelY == drawY)
+                    || (pacman.location.pixelX + pacman.speed + pacman.getCurrentBitmap().getWidth() == w && pacman.location.pixelY == drawY);
         } else if ((currentDirection == Direction.LEFT || currentDirection == Direction.RIGHT)
                 && (direction == Direction.UP || direction == Direction.DOWN)) {
             // Check for correct distance
-            retValue = pacman.location.equalsTo(new Location(drawX, drawY));
+            retValue = pacman.location.equalsTo(new Location(drawX, drawY))
+                    || pacman.location.pixelX == pacman.speed
+                    || pacman.location.pixelX + pacman.speed + pacman.getCurrentBitmap().getWidth() == w
+                    || (pacman.location.pixelY == pacman.speed && pacman.location.pixelX == drawX)
+                    || (pacman.location.pixelY + pacman.speed + pacman.getCurrentBitmap().getHeight() == h && pacman.location.pixelX == drawX);
         }
 
         return retValue;
@@ -272,5 +284,9 @@ public class Game {
             return true;
         }
         return false;
+    }
+
+    private int convertToGrid(int pixel) {
+        return pixel / gridRatio;
     }
 }

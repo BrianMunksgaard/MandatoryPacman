@@ -172,8 +172,8 @@ public class MainActivity extends Activity {
         public void run() {
             if (!game.isGameOver() && isRunning)
             {
-                game.movePacman(10, currentDirection);
-                game.moveEnemies(10);
+                game.movePacman(currentDirection);
+                game.moveEnemies();
             }
         }
     };
