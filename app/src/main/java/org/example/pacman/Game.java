@@ -183,22 +183,29 @@ public class Game {
             if (enemy.getNoOfStepsLeft() == 0) {
                 // Change direction
                 Random rnd = new Random();
-                // TODO Make sure it is possible to move that direction!
+                Direction newDirection = Direction.STOP;
                 switch (rnd.nextInt(4) + 1) {
                     case 1: //UP
-                        enemy.setDirection(Direction.UP);
+                        newDirection = Direction.UP;
                         break;
                     case 2: //DOWN
-                        enemy.setDirection(Direction.DOWN);
+                        newDirection = Direction.DOWN;
                         break;
                     case 3: //LEFT
-                        enemy.setDirection(Direction.LEFT);
+                        newDirection = Direction.LEFT;
                         break;
                     case 4: //RIGHT
-                        enemy.setDirection(Direction.RIGHT);
+                        newDirection = Direction.RIGHT;
                         break;
                 }
-                enemy.setNoOfStepsLeft(10); //rnd.nextInt(5) + 5);
+
+                // Make sure that the enemy can change direction
+                if (canChangeDirection(enemy, newDirection)) {
+                    enemy.setDirection(newDirection);
+                    enemy.setNoOfStepsLeft(50); //rnd.nextInt(5) + 5);
+                } else {
+                    enemy.setNoOfStepsLeft(1);
+                }
             } else {
                 // Move along the current direction, unless you are at the end of the road
                 enemy.setNoOfStepsLeft(enemy.getNoOfStepsLeft() - 1);
@@ -317,7 +324,7 @@ public class Game {
 
     /**
      * TODO Missing implementation and usage to get the Ghost to change direction at the "correct" time
-     * 
+     *
      * @param character
      * @param direction
      * @return
