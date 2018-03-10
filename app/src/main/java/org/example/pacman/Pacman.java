@@ -8,19 +8,14 @@ import android.graphics.BitmapFactory;
  * Created by Jens Christian Rasch on 08-03-2018.
  */
 
-public class Pacman {
+public class Pacman extends Character {
     private Context context;
 
     //bitmap of the pacman_right
-    private Bitmap pacBitmap;
     private Bitmap pacBitmapLeft;
     private Bitmap pacBitmapRight;
     private Bitmap pacBitmapUp;
     private Bitmap pacBitmapDown;
-
-    Location location;
-
-    int speed = 10;
 
     public Pacman(Context context, int x, int y) {
         this.context = context;
@@ -31,31 +26,29 @@ public class Pacman {
         pacBitmapUp = BitmapFactory.decodeResource(context.getResources(), R.drawable.pacman_up);
         pacBitmapDown = BitmapFactory.decodeResource(context.getResources(), R.drawable.pacman_down);
 
-        pacBitmap = pacBitmapLeft;
-    }
-
-    public void updateLocation(int x, int y) {
-        location.update(x, y);
+        characterBitmap = pacBitmapLeft;
     }
 
     public void setPacBitmap(Direction direction) {
-        switch (direction) {
-            case UP:
-                pacBitmap = pacBitmapUp;
-                break;
-            case DOWN:
-                pacBitmap = pacBitmapDown;
-                break;
-            case LEFT:
-                pacBitmap = pacBitmapLeft;
-                break;
-            default:
-                pacBitmap = pacBitmapRight;
-                break;
-        }
     }
 
-    public Bitmap getCurrentBitmap() {
-        return pacBitmap;
+    @Override
+    public void setDirection(Direction direction) {
+        super.setDirection(direction);
+
+        switch (direction) {
+            case UP:
+                characterBitmap = pacBitmapUp;
+                break;
+            case DOWN:
+                characterBitmap = pacBitmapDown;
+                break;
+            case LEFT:
+                characterBitmap = pacBitmapLeft;
+                break;
+            default:
+                characterBitmap = pacBitmapRight;
+                break;
+        }
     }
 }

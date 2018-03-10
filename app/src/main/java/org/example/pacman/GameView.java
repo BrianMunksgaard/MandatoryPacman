@@ -72,7 +72,7 @@ public class GameView extends View {
 
 		ArrayList<Ghost> enemies = game.getEnemies();
 		for (Ghost ghost : enemies) {
-			canvas.drawBitmap(ghost.getGhostBitmap(), ghost.location.pixelX, ghost.location.pixelY, paint);
+			canvas.drawBitmap(ghost.getCharacterBitmap(), ghost.getLocation().pixelX, ghost.getLocation().pixelY, paint);
 		}
 
 		//draw the pacman_right

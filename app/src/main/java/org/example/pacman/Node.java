@@ -32,7 +32,7 @@ public class Node {
         return coin != null;
     }
 
-    public void addEmeny(Ghost ghost) {
+    public void addEnemy(Ghost ghost) {
         ghosts.add(ghost);
     }
 

@@ -3,6 +3,7 @@ package org.example.pacman;
 import android.app.Activity;
 import android.content.pm.ActivityInfo;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -172,8 +173,7 @@ public class MainActivity extends Activity {
         public void run() {
             if (!game.isGameOver() && isRunning)
             {
-                game.movePacman(currentDirection);
-                game.moveEnemies();
+                game.performMovement(currentDirection);
             }
         }
     };

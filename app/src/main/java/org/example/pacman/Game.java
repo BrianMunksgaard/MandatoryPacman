@@ -7,6 +7,7 @@ import android.widget.TextView;
 
 
 import java.util.ArrayList;
+import java.util.Random;
 
 /**
  *
@@ -42,8 +43,6 @@ public class Game {
     private GameView gameView;
     private int h,w; //height and width of screen
 
-    private Direction currentDirection = Direction.STOP;
-
     public Game(Context context, TextView view)
     {
         this.context = context;
@@ -57,13 +56,15 @@ public class Game {
 
     public void newGame()
     {
-        pacman = new Pacman(context, 50, 400);
         //reset the points
         points = 0;
         pointsView.setText(context.getResources().getString(R.string.points)+" "+points);
         gameOver = false;
 
-        currentDirection = Direction.STOP;
+        // Initialise the player/Pacman
+        pacman = new Pacman(context, 50, 400);
+        pacman.setSpeed(10);
+//        currentDirection = Direction.STOP;
 
         coinsInitialized = false;
 
@@ -105,8 +106,10 @@ public class Game {
 
         // TODO Place the enemy correct in the grid
         Ghost enemy = new Ghost(this.context, 500, 800);
+        enemy.setSpeed(10);
+        enemy.setDirection(Direction.RIGHT);
         enemies.add(enemy);
-        gameGrid[8][5].addEmeny(enemy);
+        gameGrid[8][5].addEnemy(enemy);
 
         coinsInitialized = true;
 
@@ -117,44 +120,50 @@ public class Game {
         return coinsInitialized;
     }
 
+    public void performMovement(Direction playerDirection) {
+        movePacman(playerDirection);
+        moveEnemies();
+    }
+
     public void movePacman(Direction direction)
     {
         boolean movementAllowed = true;
-        if (isDirectionChange(direction)) {
-            movementAllowed = canChangeDirection(direction);
+        Direction currentDirection = pacman.getDirection();
+        if (isDirectionChange(pacman, direction)) {
+            movementAllowed = canChangeDirection(pacman, direction);
         }
 
         if (movementAllowed) {
             currentDirection = direction;
         }
 
-        int _pacx = pacman.location.pixelX;
-        int _pacy = pacman.location.pixelY;
+        int _pacx = pacman.getLocation().pixelX;
+        int _pacy = pacman.getLocation().pixelY;
 
         switch(currentDirection) {
             case UP:
-                if (pacman.location.pixelY - pacman.speed  > 0)
-                    pacman.updateLocation(pacman.location.pixelX, pacman.location.pixelY - pacman.speed);
+                if (pacman.getLocation().pixelY - pacman.getSpeed()  > 0)
+                    pacman.updateLocation(pacman.getLocation().pixelX, pacman.getLocation().pixelY - pacman.getSpeed());
                 break;
             case DOWN:
-                if (pacman.location.pixelY + pacman.speed + pacman.getCurrentBitmap().getHeight() < h)
-                    pacman.updateLocation(pacman.location.pixelX, pacman.location.pixelY + pacman.speed);
+                if (pacman.getLocation().pixelY + pacman.getSpeed() + pacman.getCharacterBitmap().getHeight() < h)
+                    pacman.updateLocation(pacman.getLocation().pixelX, pacman.getLocation().pixelY + pacman.getSpeed());
                 break;
             case LEFT:
-                if (pacman.location.pixelX - pacman.speed  > 0)
-                    pacman.updateLocation(pacman.location.pixelX - pacman.speed, pacman.location.pixelY);
+                if (pacman.getLocation().pixelX - pacman.getSpeed()  > 0)
+                    pacman.updateLocation(pacman.getLocation().pixelX - pacman.getSpeed(), pacman.getLocation().pixelY);
                 break;
             case RIGHT:
-                if (pacman.location.pixelX + pacman.speed + pacman.getCurrentBitmap().getWidth() < w)
-                    pacman.updateLocation(pacman.location.pixelX + pacman.speed, pacman.location.pixelY);
+                if (pacman.getLocation().pixelX + pacman.getSpeed() + pacman.getCharacterBitmap().getWidth() < w)
+                    pacman.updateLocation(pacman.getLocation().pixelX + pacman.getSpeed(), pacman.getLocation().pixelY);
                 break;
             case STOP:
                 break;
         }
 
-        if(pacman.location.pixelX != _pacx || pacman.location.pixelY != _pacy) {
-            doCollisionCheck();
-            pacman.setPacBitmap(currentDirection);
+        if(pacman.getLocation().pixelX != _pacx || pacman.getLocation().pixelY != _pacy) {
+            doCollisionCheck(pacman);
+            pacman.setDirection(currentDirection);
             gameView.invalidate();
         }
     }
@@ -163,67 +172,129 @@ public class Game {
 
         /**
          * TODO
-         *  If enemy.getNoOfStepsLeft() == 0 then chose a new direction and set the no of steps to be taken in that direction
-         *  If enemy.getNoOfStepsLeft() > 0 then move a step i the enemy.getCurrentDireciton() and set enemy.setNoOfStepsLeft(enemy.getNoOfStepsLeft() - 1)
+         *  Create a method that can test if it is possible from the current location to change
+         *  direction. If it is, then select a random direction for the next move.
          */
         for (Ghost enemy : getEnemies()) {
-            Location loc = enemy.location;
+            Location loc = enemy.getLocation();
             int startX = loc.pixelX;
             int startY = loc.pixelY;
 
-            int newX = startX + enemy.speed;
-            int newY = startY;
-            if (newX + enemy.getGhostBitmap().getHeight() < w) {
-                enemy.updateLocation(newX, newY);
+            if (enemy.getNoOfStepsLeft() == 0) {
+                // Change direction
+                Random rnd = new Random();
+                // TODO Make sure it is possible to move that direction!
+                switch (rnd.nextInt(4) + 1) {
+                    case 1: //UP
+                        enemy.setDirection(Direction.UP);
+                        break;
+                    case 2: //DOWN
+                        enemy.setDirection(Direction.DOWN);
+                        break;
+                    case 3: //LEFT
+                        enemy.setDirection(Direction.LEFT);
+                        break;
+                    case 4: //RIGHT
+                        enemy.setDirection(Direction.RIGHT);
+                        break;
+                }
+                enemy.setNoOfStepsLeft(10); //rnd.nextInt(5) + 5);
+            } else {
+                // Move along the current direction, unless you are at the end of the road
+                enemy.setNoOfStepsLeft(enemy.getNoOfStepsLeft() - 1);
             }
 
-            if (enemy.location.pixelX != startX || enemy.location.pixelY != startY) {
-                doCollisionCheckEnemy(enemy);
+            // Set the target location and move there
+            int newX;
+            int newY;
+            switch (enemy.getDirection()) {
+                case UP:
+                    newX = startX;
+                    newY = startY - enemy.getSpeed();
+                    if (newY <= 0) {
+                        newY = startY + enemy.getSpeed();
+                        enemy.setDirection(Direction.DOWN);
+                    }
+                    enemy.updateLocation(newX, newY);
+                    break;
+                case DOWN:
+                    newX = startX;
+                    newY = startY + enemy.getSpeed();
+                    if (newY + enemy.getCharacterBitmap().getHeight() >= h) {
+                        newY = startY - enemy.getSpeed();
+                        enemy.setDirection(Direction.UP);
+                    }
+                    enemy.updateLocation(newX, newY);
+                    break;
+                case LEFT:
+                    newX = startX - enemy.getSpeed();
+                    newY = startY;
+                    if (newX <= 0) {
+                        newX = startX + enemy.getSpeed();
+                        enemy.setDirection(Direction.RIGHT);
+                    }
+                    enemy.updateLocation(newX, newY);
+                    break;
+                case RIGHT:
+                    newX = startX + enemy.getSpeed();
+                    newY = startY;
+                    if (newX + enemy.getCharacterBitmap().getWidth() >= w) {
+                        newX = startX - enemy.getSpeed();
+                        enemy.setDirection(Direction.LEFT);
+                    }
+                    enemy.updateLocation(newX, newY);
+                    break;
+            }
+
+            if (enemy.getLocation().pixelX != startX || enemy.getLocation().pixelY != startY) {
+                doCollisionCheck(enemy);
                 gameView.invalidate();
             }
         }
     }
 
-    public void doCollisionCheck()
+    public void doCollisionCheck(Character character)
     {
-        // Calculate the grid coordinates for the pacman
-        int gridX = convertToGrid(pacman.location.pixelX);
-        int gridY = convertToGrid(pacman.location.pixelY);
-        // Find the coin at the same grid location as the pacman
-        // If there is a coin here, figure out if we should take it
-        if (gameGrid[gridY][gridX].hasCoin()) {
-            GoldCoin gc = gameGrid[gridY][gridX].getCoin();
-            // Check that the distance between the pacman and the coin is within the limit
-            if (pacman.location.distanceTo(gc.getLocation()) <= 30) {
-                points += gc.getValue();
-                gc.take();
-                coins.remove(gc);
-                gameGrid[gridY][gridX].removeCoin();
-                pointsView.setText(context.getResources().getString(R.string.points)+" "+points);
+        Location charLocation = character.getLocation();
+        if (character instanceof Ghost) {
+            Location playerLocation = pacman.getLocation();
+            // If an enemy "runs into" the player it is game over!
+            if (charLocation.equalsTo(playerLocation)) {
+                gameOver = true;
+            }
+        } else {
+            // Calculate the grid coordinates for the pacman
+            int gridX = convertToGrid(charLocation.pixelX);
+            int gridY = convertToGrid(charLocation.pixelY);
+            // Find the coin at the same grid location as the pacman
+            // If there is a coin here, figure out if we should take it
+            if (gameGrid[gridY][gridX].hasCoin()) {
+                GoldCoin gc = gameGrid[gridY][gridX].getCoin();
+                // Check that the distance between the character and the coin is within the limit
+                if (charLocation.distanceTo(gc.getLocation()) <= 30) {
+                    points += gc.getValue();
+                    gc.take();
+                    coins.remove(gc);
+                    gameGrid[gridY][gridX].removeCoin();
+                    pointsView.setText(context.getResources().getString(R.string.points)+" "+points);
 
-                if (coins.size() == 0) {
-                    gameOver = true;
+                    if (coins.size() == 0) {
+                        gameOver = true;
+                    }
                 }
             }
-        }
 
-        for (Ghost enemy : getEnemies()) {
-            if (enemy.location.equalsTo(pacman.location)) {
-                gameOver = true;
-                break;
+            for (Ghost enemy : getEnemies()) {
+                if (enemy.getLocation().equalsTo(charLocation)) {
+                    gameOver = true;
+                    break;
+                }
             }
-        }
-    }
-
-    public void doCollisionCheckEnemy(Ghost ghost) {
-        Location pacmanLocation = pacman.location;
-        if (ghost.location.equalsTo(pacmanLocation)) {
-            gameOver = true;
         }
     }
 
     public Location getPacmanLocation() {
-        return pacman.location;
+        return pacman.getLocation();
     }
 
     public ArrayList<GoldCoin> getCoins()
@@ -237,49 +308,57 @@ public class Game {
 
     public Bitmap getPacBitmap()
     {
-        return Bitmap.createScaledBitmap(pacman.getCurrentBitmap(), gridRatio, gridRatio, true);
-    }
-
-    public static int getGridRatio() {
-        return gridRatio;
+        return Bitmap.createScaledBitmap(pacman.getCharacterBitmap(), gridRatio, gridRatio, true);
     }
 
     public boolean isGameOver() {
         return gameOver;
     }
 
-    private boolean canChangeDirection(Direction direction) {
+    /**
+     * TODO Missing implementation and usage to get the Ghost to change direction at the "correct" time
+     * 
+     * @param character
+     * @param direction
+     * @return
+     */
+    private boolean canChangeDirection(Character character, Direction direction) {
         boolean retValue = false;
-        int drawX = convertToGrid(pacman.location.pixelX) * gridRatio;
-        int drawY = convertToGrid(pacman.location.pixelY) * gridRatio;
+        Location charLocation = character.getLocation();
+        int charSpeed = character.getSpeed();
+        Direction charDirection = character.getDirection();
 
-//        Log.d("changeDirection", "pacx,pacy:" + pacman.location.pixelX + "," + pacman.location.pixelY + "|drawx,drawy:" + drawX + "," + drawY + "|w,h:" + w + "," + h + "|bitmap:" + pacman.getCurrentBitmap().getWidth() + "," + pacman.getCurrentBitmap().getHeight());
-        if ((currentDirection == Direction.UP || currentDirection == Direction.DOWN)
+        int drawX = convertToGrid(charLocation.pixelX) * gridRatio;
+        int drawY = convertToGrid(charLocation.pixelY) * gridRatio;
+
+//        Log.d("changeDirection", "pacx,pacy:" + pacman.getLocation().pixelX + "," + pacman.getLocation().pixelY + "|drawx,drawy:" + drawX + "," + drawY + "|w,h:" + w + "," + h + "|bitmap:" + pacman.getCurrentBitmap().getWidth() + "," + pacman.getCurrentBitmap().getHeight());
+        if ((charDirection == Direction.UP || charDirection == Direction.DOWN)
                 && (direction == Direction.LEFT || direction == Direction.RIGHT)) {
              //Check for correct distance
-            retValue = pacman.location.equalsTo(new Location(drawX, drawY))
-                    || pacman.location.pixelY == pacman.speed
-                    || pacman.location.pixelY + pacman.speed + pacman.getCurrentBitmap().getHeight() == h
-                    || (pacman.location.pixelX == pacman.speed && pacman.location.pixelY == drawY)
-                    || (pacman.location.pixelX + pacman.speed + pacman.getCurrentBitmap().getWidth() == w && pacman.location.pixelY == drawY);
-        } else if ((currentDirection == Direction.LEFT || currentDirection == Direction.RIGHT)
+            retValue = charLocation.equalsTo(new Location(drawX, drawY))
+                    || charLocation.pixelY == charSpeed
+                    || charLocation.pixelY + charSpeed + character.getCharacterBitmap().getHeight() == h
+                    || (charLocation.pixelX == charSpeed && charLocation.pixelY == drawY)
+                    || (charLocation.pixelX + charSpeed + character.getCharacterBitmap().getWidth() == w && charLocation.pixelY == drawY);
+        } else if ((charDirection == Direction.LEFT || charDirection == Direction.RIGHT)
                 && (direction == Direction.UP || direction == Direction.DOWN)) {
             // Check for correct distance
-            retValue = pacman.location.equalsTo(new Location(drawX, drawY))
-                    || pacman.location.pixelX == pacman.speed
-                    || pacman.location.pixelX + pacman.speed + pacman.getCurrentBitmap().getWidth() == w
-                    || (pacman.location.pixelY == pacman.speed && pacman.location.pixelX == drawX)
-                    || (pacman.location.pixelY + pacman.speed + pacman.getCurrentBitmap().getHeight() == h && pacman.location.pixelX == drawX);
+            retValue = charLocation.equalsTo(new Location(drawX, drawY))
+                    || charLocation.pixelX == charSpeed
+                    || charLocation.pixelX + charSpeed + character.getCharacterBitmap().getWidth() == w
+                    || (charLocation.pixelY == charSpeed && charLocation.pixelX == drawX)
+                    || (charLocation.pixelY + charSpeed + character.getCharacterBitmap().getHeight() == h && charLocation.pixelX == drawX);
         }
 
         return retValue;
     }
 
-    public boolean isDirectionChange(Direction direction) {
-        if ((currentDirection == Direction.UP || currentDirection == Direction.DOWN)
+    public boolean isDirectionChange(Character character, Direction direction) {
+        Direction charDirection = character.getDirection();
+        if ((charDirection == Direction.UP || charDirection == Direction.DOWN)
                 && (direction == Direction.LEFT || direction == Direction.RIGHT)) {
             return true;
-        } else if ((currentDirection == Direction.LEFT || currentDirection == Direction.RIGHT)
+        } else if ((charDirection == Direction.LEFT || charDirection == Direction.RIGHT)
                 && (direction == Direction.UP || direction == Direction.DOWN)) {
             return true;
         }
