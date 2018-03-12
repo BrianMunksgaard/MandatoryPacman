@@ -1,9 +1,9 @@
 package org.example.pacman;
 
 /**
- * Created by brianmunksgaard on 01/03/2018.
+ * Character movement direction. A character
+ * in the game can move in one of the direction.
  */
-
 public enum Direction {
     RIGHT, LEFT, UP, DOWN, STOP;
 }

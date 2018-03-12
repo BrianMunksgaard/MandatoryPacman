@@ -5,15 +5,21 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 
 /**
- * Created by Jens Christian Rasch on 08-03-2018.
+ * This class is used to represent a ghost character
+ * in the Pac Man game.
  */
-
 public class Ghost extends Character {
 
     private Context context;
 
     private int noOfStepsLeft = 0;
 
+    /**
+     * Constructs a new ghost with the correct ghost bitmap.
+     * @param context
+     * @param x
+     * @param y
+     */
     public Ghost(Context context, int x, int y) {
         this.context = context;
         location = new Location(x, y);

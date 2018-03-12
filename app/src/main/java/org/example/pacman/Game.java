@@ -2,7 +2,6 @@ package org.example.pacman;
 
 import android.content.Context;
 import android.graphics.Bitmap;
-import android.util.Log;
 import android.widget.TextView;
 
 
@@ -143,19 +142,19 @@ public class Game {
         switch(currentDirection) {
             case UP:
                 if (pacman.getLocation().pixelY - pacman.getSpeed()  > 0)
-                    pacman.updateLocation(pacman.getLocation().pixelX, pacman.getLocation().pixelY - pacman.getSpeed());
+                    pacman.setLocation(pacman.getLocation().pixelX, pacman.getLocation().pixelY - pacman.getSpeed());
                 break;
             case DOWN:
                 if (pacman.getLocation().pixelY + pacman.getSpeed() + pacman.getCharacterBitmap().getHeight() < h)
-                    pacman.updateLocation(pacman.getLocation().pixelX, pacman.getLocation().pixelY + pacman.getSpeed());
+                    pacman.setLocation(pacman.getLocation().pixelX, pacman.getLocation().pixelY + pacman.getSpeed());
                 break;
             case LEFT:
                 if (pacman.getLocation().pixelX - pacman.getSpeed()  > 0)
-                    pacman.updateLocation(pacman.getLocation().pixelX - pacman.getSpeed(), pacman.getLocation().pixelY);
+                    pacman.setLocation(pacman.getLocation().pixelX - pacman.getSpeed(), pacman.getLocation().pixelY);
                 break;
             case RIGHT:
                 if (pacman.getLocation().pixelX + pacman.getSpeed() + pacman.getCharacterBitmap().getWidth() < w)
-                    pacman.updateLocation(pacman.getLocation().pixelX + pacman.getSpeed(), pacman.getLocation().pixelY);
+                    pacman.setLocation(pacman.getLocation().pixelX + pacman.getSpeed(), pacman.getLocation().pixelY);
                 break;
             case STOP:
                 break;
@@ -222,7 +221,7 @@ public class Game {
                         newY = startY + enemy.getSpeed();
                         enemy.setDirection(Direction.DOWN);
                     }
-                    enemy.updateLocation(newX, newY);
+                    enemy.setLocation(newX, newY);
                     break;
                 case DOWN:
                     newX = startX;
@@ -231,7 +230,7 @@ public class Game {
                         newY = startY - enemy.getSpeed();
                         enemy.setDirection(Direction.UP);
                     }
-                    enemy.updateLocation(newX, newY);
+                    enemy.setLocation(newX, newY);
                     break;
                 case LEFT:
                     newX = startX - enemy.getSpeed();
@@ -240,7 +239,7 @@ public class Game {
                         newX = startX + enemy.getSpeed();
                         enemy.setDirection(Direction.RIGHT);
                     }
-                    enemy.updateLocation(newX, newY);
+                    enemy.setLocation(newX, newY);
                     break;
                 case RIGHT:
                     newX = startX + enemy.getSpeed();
@@ -249,7 +248,7 @@ public class Game {
                         newX = startX - enemy.getSpeed();
                         enemy.setDirection(Direction.LEFT);
                     }
-                    enemy.updateLocation(newX, newY);
+                    enemy.setLocation(newX, newY);
                     break;
             }
 
