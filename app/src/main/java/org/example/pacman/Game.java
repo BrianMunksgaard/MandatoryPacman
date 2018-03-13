@@ -62,8 +62,10 @@ public class Game {
         gameOver = false;
 
         // Initialise the player/Pacman
-        pacman = new Pacman(context, 50, 400);
+        pacman = new Pacman(context, 100, 400);
         pacman.setSpeed(10);
+
+        enemies.clear();
 
         coinsInitialized = false;
 
@@ -124,6 +126,8 @@ public class Game {
         enemies.add(enemy);
         gameGrid[8][5].addEnemy(enemy);
 
+        gameGrid[4][1].addPlayer(pacman);
+
         coinsInitialized = true;
 
         return true;
@@ -181,6 +185,8 @@ public class Game {
         if((pacman.getLocation().pixelX != _pacx || pacman.getLocation().pixelY != _pacy)) {
             doCollisionCheck(pacman);
             pacman.setDirection(currentDirection);
+            gameGrid[convertToGrid(_pacy)][convertToGrid(_pacx)].removePlayer();
+            gameGrid[convertToGrid(pacman.getLocation().pixelY)][convertToGrid(pacman.getLocation().pixelX)].addPlayer(pacman);
             gameView.invalidate();
         }
     }
@@ -199,11 +205,8 @@ public class Game {
 
             if (enemy.getNoOfStepsLeft() == 0) {
                 // Change direction
-                Random rnd = new Random();
                 Direction newDirection = selectRandomDirection(enemy.getDirection());
-
                 if (checkForWall(enemy, newDirection)) {
-                    Log.d("Wall ahead", "enemy:" + enemy.getLocation());
                     newDirection = selectRandomDirection(newDirection);
                 }
 
@@ -216,7 +219,6 @@ public class Game {
                 }
             } else {
                 if (checkForWall(enemy, enemy.getDirection())) {
-                    Log.d("Wall ahead", "enemy:" + enemy.getLocation());
                     enemy.setDirection(selectRandomDirection(enemy.getDirection()));
                 }
                 // Move along the current direction, unless you are at the end of the road
@@ -267,6 +269,7 @@ public class Game {
 
             if (enemy.getLocation().pixelX != startX || enemy.getLocation().pixelY != startY) {
                 doCollisionCheck(enemy);
+
                 gameView.invalidate();
             }
         }
@@ -327,9 +330,6 @@ public class Game {
      * @return
      */
     public boolean checkForWall(Character character, Direction directionCheck) {
-        if (character.getDirection() == null) {
-            return false;
-        }
         Location charLocation = character.getLocation();
         int gridX = convertToGrid(charLocation.pixelX);
         int gridY = convertToGrid(charLocation.pixelY);
@@ -395,7 +395,6 @@ public class Game {
         int drawX = convertToGrid(charLocation.pixelX) * gridRatio;
         int drawY = convertToGrid(charLocation.pixelY) * gridRatio;
 
-//        Log.d("changeDirection", "pacx,pacy:" + pacman.getLocation().pixelX + "," + pacman.getLocation().pixelY + "|drawx,drawy:" + drawX + "," + drawY + "|w,h:" + w + "," + h + "|bitmap:" + pacman.getCurrentBitmap().getWidth() + "," + pacman.getCurrentBitmap().getHeight());
         if ((charDirection == Direction.UP || charDirection == Direction.DOWN)
                 && (direction == Direction.LEFT || direction == Direction.RIGHT)) {
              //Check for correct distance

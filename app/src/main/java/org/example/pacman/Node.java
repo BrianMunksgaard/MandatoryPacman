@@ -11,6 +11,7 @@ public class Node {
     private GoldCoin coin;
     private ArrayList<Ghost> ghosts;
     private Wall wall;
+    private Pacman player;
 
     public Node() {
         ghosts = new ArrayList<>();
@@ -46,6 +47,14 @@ public class Node {
 
     public ArrayList<Ghost> getEnemies() {
         return ghosts;
+    }
+
+    public void addPlayer(Pacman pacman) {
+        player = pacman;
+    }
+
+    public void removePlayer() {
+        player = null;
     }
 
     public Wall getWall() {

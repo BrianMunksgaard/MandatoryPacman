@@ -71,7 +71,6 @@ public class GameView extends View {
 					paint.setColor(Color.BLUE);
 					paint.setStrokeWidth(100);
 					canvas.drawLine(drawX + 50, drawY, drawX + 50, drawY + 100, paint);
-//					canvas.drawCircle(drawX + 50, drawY + 50, 20, paint);
 				} else if (node.hasCoin()) {
 					GoldCoin gc = node.getCoin();
 					int drawX = gc.getLocation().pixelX;
@@ -82,6 +81,8 @@ public class GameView extends View {
 			}
 		}
 
+		// INFO The reason Pacman and Enemies are not drawn in the for-loop is due to layering
+		//		when drawing. The last item draw is going to be on top of the others.
 		//draw the Pacman
 		Location pacmanLocation = game.getPacmanLocation();
 		canvas.drawBitmap(game.getPacBitmap(), pacmanLocation.pixelX, pacmanLocation.pixelY, paint);
