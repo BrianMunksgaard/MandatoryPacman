@@ -6,6 +6,7 @@ import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.view.View;
 import android.widget.Toast;
 
@@ -58,26 +59,38 @@ public class GameView extends View {
 		}
 
 		Paint paint = new Paint();
-		paint.setColor(Color.YELLOW);
-		ArrayList<GoldCoin> coinsLeft = game.getCoins();
-		if (coinsLeft.size() > 0) {
-			for (GoldCoin gc : coinsLeft) {
-				int drawX = gc.getLocation().pixelX;
-				int drawY = gc.getLocation().pixelY;
-				if (!gc.isTaken()) {
+
+		Node[][] gameGrid = game.getGameGrid();
+		for (int height = 0; height < gameGrid.length; height++) {
+			for (int width = 0; width < gameGrid[height].length; width++) {
+				Node node = gameGrid[height][width];
+				if (node.isObstructed()) {
+					Wall wall = node.getWall();
+					int drawX = wall.getLocation().pixelX;
+					int drawY = wall.getLocation().pixelY;
+					paint.setColor(Color.BLUE);
+					paint.setStrokeWidth(100);
+					canvas.drawLine(drawX + 50, drawY, drawX + 50, drawY + 100, paint);
+//					canvas.drawCircle(drawX + 50, drawY + 50, 20, paint);
+				} else if (node.hasCoin()) {
+					GoldCoin gc = node.getCoin();
+					int drawX = gc.getLocation().pixelX;
+					int drawY = gc.getLocation().pixelY;
+					paint.setColor(Color.YELLOW);
 					canvas.drawCircle(drawX + 50, drawY + 50, 20, paint);
 				}
 			}
 		}
 
+		//draw the Pacman
+		Location pacmanLocation = game.getPacmanLocation();
+		canvas.drawBitmap(game.getPacBitmap(), pacmanLocation.pixelX, pacmanLocation.pixelY, paint);
+
+		// Draw enemies
 		ArrayList<Ghost> enemies = game.getEnemies();
 		for (Ghost ghost : enemies) {
 			canvas.drawBitmap(ghost.getCharacterBitmap(), ghost.getLocation().pixelX, ghost.getLocation().pixelY, paint);
 		}
-
-		//draw the pacman_right
-		Location pacmanLocation = game.getPacmanLocation();
-		canvas.drawBitmap(game.getPacBitmap(), pacmanLocation.pixelX, pacmanLocation.pixelY, paint);
 
 		if (game.isGameOver()) {
 			Toast.makeText(this.getContext(), "GAME OVER!", Toast.LENGTH_LONG).show();

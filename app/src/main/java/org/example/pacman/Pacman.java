@@ -29,9 +29,6 @@ public class Pacman extends Character {
         characterBitmap = pacBitmapLeft;
     }
 
-    public void setPacBitmap(Direction direction) {
-    }
-
     @Override
     public void setDirection(Direction direction) {
         super.setDirection(direction);
@@ -46,8 +43,10 @@ public class Pacman extends Character {
             case LEFT:
                 characterBitmap = pacBitmapLeft;
                 break;
-            default:
+            case RIGHT:
                 characterBitmap = pacBitmapRight;
+                break;
+            default:
                 break;
         }
     }

@@ -10,7 +10,7 @@ public class Node {
 
     private GoldCoin coin;
     private ArrayList<Ghost> ghosts;
-    private boolean hasWall = false;
+    private Wall wall;
 
     public Node() {
         ghosts = new ArrayList<>();
@@ -48,15 +48,19 @@ public class Node {
         return ghosts;
     }
 
-    public void placeWall() {
-        hasWall = true;
+    public Wall getWall() {
+        return wall;
+    }
+
+    public void placeWall(Wall wall) {
+        this.wall = wall;
     }
 
     public void removeWall() {
-        hasWall = false;
+        wall = null;
     }
 
     public boolean isObstructed() {
-        return hasWall;
+        return (wall != null);
     }
 }

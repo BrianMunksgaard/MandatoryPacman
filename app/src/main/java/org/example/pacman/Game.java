@@ -2,6 +2,7 @@ package org.example.pacman;
 
 import android.content.Context;
 import android.graphics.Bitmap;
+import android.util.Log;
 import android.widget.TextView;
 
 
@@ -92,20 +93,34 @@ public class Game {
         }
         coins.clear();
 
+        // Place the 2 walls
+        // Wall 1:
+        gameGrid[2][2].placeWall(new Wall(2 * gridRatio, 2 * gridRatio));
+        gameGrid[3][2].placeWall(new Wall(2 * gridRatio, 3 * gridRatio));
+        gameGrid[4][2].placeWall(new Wall(2 * gridRatio, 4 * gridRatio));
+        // Wall 2:
+        gameGrid[7][7].placeWall(new Wall(7 * gridRatio, 7 * gridRatio));
+        gameGrid[8][7].placeWall(new Wall(7 * gridRatio, 8 * gridRatio));
+        gameGrid[9][7].placeWall(new Wall(7 * gridRatio, 9 * gridRatio));
+        gameGrid[10][7].placeWall(new Wall(7 * gridRatio, 10 * gridRatio));
+
         for (int height = 0; height < gridHeight; height++) {
             for (int width = 0; width < gridWidth; width++) {
-                int x = width * gridRatio;
-                int y = height * gridRatio;
-                GoldCoin gc = new GoldCoin(x, y, 10);
-                gameGrid[height][width].setCoin(gc);
-                coins.add(gc);
+                if (!gameGrid[height][width].isObstructed()) {
+                    int x = width * gridRatio;
+                    int y = height * gridRatio;
+                    GoldCoin gc = new GoldCoin(x, y, 10);
+                    gameGrid[height][width].setCoin(gc);
+                    coins.add(gc);
+                }
             }
         }
 
-        // TODO Place the enemy correct in the grid
+        // Place the enemy in the grid
         Ghost enemy = new Ghost(this.context, 500, 800);
         enemy.setSpeed(10);
         enemy.setDirection(Direction.RIGHT);
+        enemy.setNoOfStepsLeft(50);
         enemies.add(enemy);
         gameGrid[8][5].addEnemy(enemy);
 
@@ -135,6 +150,10 @@ public class Game {
             currentDirection = direction;
         }
 
+        if (checkForWall(pacman, direction)) {
+            currentDirection = Direction.STOP;
+        }
+
         int _pacx = pacman.getLocation().pixelX;
         int _pacy = pacman.getLocation().pixelY;
 
@@ -159,7 +178,7 @@ public class Game {
                 break;
         }
 
-        if(pacman.getLocation().pixelX != _pacx || pacman.getLocation().pixelY != _pacy) {
+        if((pacman.getLocation().pixelX != _pacx || pacman.getLocation().pixelY != _pacy)) {
             doCollisionCheck(pacman);
             pacman.setDirection(currentDirection);
             gameView.invalidate();
@@ -181,20 +200,11 @@ public class Game {
             if (enemy.getNoOfStepsLeft() == 0) {
                 // Change direction
                 Random rnd = new Random();
-                Direction newDirection = Direction.STOP;
-                switch (rnd.nextInt(4) + 1) {
-                    case 1: //UP
-                        newDirection = Direction.UP;
-                        break;
-                    case 2: //DOWN
-                        newDirection = Direction.DOWN;
-                        break;
-                    case 3: //LEFT
-                        newDirection = Direction.LEFT;
-                        break;
-                    case 4: //RIGHT
-                        newDirection = Direction.RIGHT;
-                        break;
+                Direction newDirection = selectRandomDirection(enemy.getDirection());
+
+                if (checkForWall(enemy, newDirection)) {
+                    Log.d("Wall ahead", "enemy:" + enemy.getLocation());
+                    newDirection = selectRandomDirection(newDirection);
                 }
 
                 // Make sure that the enemy can change direction
@@ -205,6 +215,10 @@ public class Game {
                     enemy.setNoOfStepsLeft(1);
                 }
             } else {
+                if (checkForWall(enemy, enemy.getDirection())) {
+                    Log.d("Wall ahead", "enemy:" + enemy.getLocation());
+                    enemy.setDirection(selectRandomDirection(enemy.getDirection()));
+                }
                 // Move along the current direction, unless you are at the end of the road
                 enemy.setNoOfStepsLeft(enemy.getNoOfStepsLeft() - 1);
             }
@@ -258,9 +272,16 @@ public class Game {
         }
     }
 
+    /**
+     * A collision detection method used by both Ghost and Pacman
+     * @param character
+     */
     public void doCollisionCheck(Character character)
     {
         Location charLocation = character.getLocation();
+        // Calculate the grid coordinates for the pacman
+        int gridX = convertToGrid(charLocation.pixelX);
+        int gridY = convertToGrid(charLocation.pixelY);
         if (character instanceof Ghost) {
             Location playerLocation = pacman.getLocation();
             // If an enemy "runs into" the player it is game over!
@@ -268,19 +289,17 @@ public class Game {
                 gameOver = true;
             }
         } else {
-            // Calculate the grid coordinates for the pacman
-            int gridX = convertToGrid(charLocation.pixelX);
-            int gridY = convertToGrid(charLocation.pixelY);
             // Find the coin at the same grid location as the pacman
             // If there is a coin here, figure out if we should take it
-            if (gameGrid[gridY][gridX].hasCoin()) {
-                GoldCoin gc = gameGrid[gridY][gridX].getCoin();
+            Node node = gameGrid[gridY][gridX];
+            if (node.hasCoin()) {
+                GoldCoin gc = node.getCoin();
                 // Check that the distance between the character and the coin is within the limit
                 if (charLocation.distanceTo(gc.getLocation()) <= 30) {
                     points += gc.getValue();
                     gc.take();
                     coins.remove(gc);
-                    gameGrid[gridY][gridX].removeCoin();
+                    node.removeCoin();
                     pointsView.setText(context.getResources().getString(R.string.points)+" "+points);
 
                     if (coins.size() == 0) {
@@ -290,12 +309,49 @@ public class Game {
             }
 
             for (Ghost enemy : getEnemies()) {
-                if (enemy.getLocation().equalsTo(charLocation)) {
+                if (enemy.getLocation().distanceTo(charLocation) <= 20) {
                     gameOver = true;
                     break;
                 }
             }
         }
+    }
+
+    /**
+     * Implementation of checking if the next grid location that the character is moving towards
+     * is a wall and therefor is not a valid location to move to.
+     *
+     * INFO: The implementation could be better and use the other collision detection method.
+     * @param character
+     * @param directionCheck
+     * @return
+     */
+    public boolean checkForWall(Character character, Direction directionCheck) {
+        if (character.getDirection() == null) {
+            return false;
+        }
+        Location charLocation = character.getLocation();
+        int gridX = convertToGrid(charLocation.pixelX);
+        int gridY = convertToGrid(charLocation.pixelY);
+        switch(directionCheck) {
+            case UP:
+                gridY -= 1;
+                break;
+            case DOWN:
+                gridY += 1;
+                break;
+            case LEFT:
+                gridX -= 1;
+                break;
+            case RIGHT:
+                gridX += 1;
+                break;
+        }
+        if (gridX < 0 || gridX >= gridWidth || gridY < 0 || gridY >= gridHeight) {
+            return false;
+        }
+        double dist = charLocation.distanceTo(new Location(gridX * gridRatio, gridY * gridRatio));
+        return gameGrid[gridY][gridX].isObstructed() && dist == 100;
     }
 
     public Location getPacmanLocation() {
@@ -309,6 +365,10 @@ public class Game {
 
     public ArrayList<Ghost> getEnemies() {
         return enemies;
+    }
+
+    public Node[][] getGameGrid() {
+        return gameGrid;
     }
 
     public Bitmap getPacBitmap()
@@ -371,5 +431,30 @@ public class Game {
 
     private int convertToGrid(int pixel) {
         return pixel / gridRatio;
+    }
+
+    private Direction selectRandomDirection(Direction currentDirection) {
+        Random rnd = new Random();
+        Direction newDirection = Direction.STOP;
+        switch (rnd.nextInt(4) + 1) {
+            case 1: //UP
+                newDirection = Direction.UP;
+                break;
+            case 2: //DOWN
+                newDirection = Direction.DOWN;
+                break;
+            case 3: //LEFT
+                newDirection = Direction.LEFT;
+                break;
+            case 4: //RIGHT
+                newDirection = Direction.RIGHT;
+                break;
+        }
+
+        if (newDirection == currentDirection) {
+            newDirection = selectRandomDirection(currentDirection);
+        }
+
+        return newDirection;
     }
 }
