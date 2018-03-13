@@ -63,7 +63,6 @@ public class Game {
         // Initialise the player/Pacman
         pacman = new Pacman(context, 50, 400);
         pacman.setSpeed(10);
-//        currentDirection = Direction.STOP;
 
         coinsInitialized = false;
 
@@ -322,7 +321,6 @@ public class Game {
     }
 
     /**
-     * TODO Missing implementation and usage to get the Ghost to change direction at the "correct" time
      *
      * @param character
      * @param direction
