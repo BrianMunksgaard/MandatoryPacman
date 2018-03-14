@@ -3,9 +3,9 @@ package org.example.pacman;
 import java.util.ArrayList;
 
 /**
- * Created by Jens Christian Rasch on 09-03-2018.
+ * The node class represents a single square
+ * on the pacman virtual grid.
  */
-
 public class Node {
 
     private GoldCoin coin;

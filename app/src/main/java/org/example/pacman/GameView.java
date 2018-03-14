@@ -14,14 +14,15 @@ import java.util.ArrayList;
 
 public class GameView extends View {
 
+	/*
+	 * Reference to the game controller.
+	 */
 	Game game;
-    int h,w; //used for storing our height and width of the view
 
-	public void setGame(Game game)
-	{
-		this.game = game;
-	}
-
+	/*
+	 * The height and width of the canvas/the game view.
+	 */
+    int h,w;
 
 	/* The next 3 constructors are needed for the Android view system,
 	when we have a custom view.
@@ -41,6 +42,15 @@ public class GameView extends View {
 		super(context, attrs, defStyleAttr);
 	}
 
+	/**
+	 * Associate the game view vith the game controller.
+	 * @param game
+	 */
+	public void setGame(Game game)
+	{
+		this.game = game;
+	}
+
 	//In the onDraw we put all our code that should be
 	//drawn whenever we update the screen.
 	@Override
@@ -54,8 +64,8 @@ public class GameView extends View {
 		//Making a new paint object
 		canvas.drawColor(Color.WHITE); //clear entire canvas to white color
 
-		if (!game.areCoinsInitialized()) {
-			game.initializeCoins();
+		if (!game.isGameInitialized()) {
+			game.initializeGame();
 		}
 
 		Paint paint = new Paint();
@@ -82,8 +92,8 @@ public class GameView extends View {
 		}
 
 		// INFO The reason Pacman and Enemies are not drawn in the for-loop is due to layering
-		//		when drawing. The last item draw is going to be on top of the others.
-		//draw the Pacman
+		// when drawing. The last item draw is going to be on top of the others.
+		// draw the Pacman
 		Location pacmanLocation = game.getPacmanLocation();
 		canvas.drawBitmap(game.getPacBitmap(), pacmanLocation.pixelX, pacmanLocation.pixelY, paint);
 

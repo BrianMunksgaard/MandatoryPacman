@@ -2,7 +2,6 @@ package org.example.pacman;
 
 import android.content.Context;
 import android.graphics.Bitmap;
-import android.util.Log;
 import android.widget.TextView;
 
 
@@ -10,96 +9,146 @@ import java.util.ArrayList;
 import java.util.Random;
 
 /**
- *
- * This class should contain all your game logic
+ * The game class holds all the game logic such as
+ * the current score, the number of enemies, whether
+ * or not the games has finished etc.
  */
-
 public class Game {
 
-    //context is a reference to the activity
+    /*
+     * Context is a reference to the main activity.
+     */
     private Context context;
+
+    /*
+     * The current number of points (the score).
+     */
     private int points = 0; //how points do we have
 
+    /*
+     * Whether or not the game has finished.
+     */
     boolean gameOver = false;
 
-    private boolean coinsInitialized = false;
+    /*
+     * Whether or not the game has been initialized.
+     */
+    private boolean isGameInitialized = false;
 
-    // Our hero
+    /*
+     * Our hero
+     */
     private Pacman pacman;
-    // List of enemies
+
+    /*
+     * Pacman enemies.
+     */
     private ArrayList<Ghost> enemies = new ArrayList<>();
-    // List of goldcoins - initially empty
+
+    /*
+     * Gold coins.
+     */
     private ArrayList<GoldCoin> coins = new ArrayList<>();
 
-    // Game grid
+    /*
+     * The grid ratio, that is, the ratio between the
+     * physical game view and the virtual grid.
+     */
     private static final int gridRatio = 100;
+
+    /*
+     * All positions/squares in the virtual
+     * grid.
+     */
     private Node[][] gameGrid;
+
+    /*
+     * The height of the virtual grid.
+     */
     private int gridHeight = 0;
+
+    /*
+     * The width of the virtual grid.
+     */
     private int gridWidth = 0;
 
-    //textview reference to points
+    /*
+     * Reference to the view used to display the
+     * current score.
+     */
     private TextView pointsView;
-    //a reference to the gameview
-    private GameView gameView;
-    private int h,w; //height and width of screen
 
+    /*
+     * Reference to the physical game view, that is,
+     * the actual android game view.
+     */
+    private GameView gameView;
+
+    /*
+     * The physical pixel height and width of the screen.
+     */
+    private int h,w;
+
+    /**
+     * Initialize the Game class.
+     */
     public Game(Context context, TextView view)
     {
         this.context = context;
         this.pointsView = view;
     }
 
+    /**
+     * Prepare to start new game.
+     */
+    public void newGame()
+    {
+        // Game has not yet been initialized.
+        isGameInitialized = false;
+
+        // Redraw physical screen.
+        // This will also result in a call
+        // to initializeGame.
+        gameView.invalidate();
+    }
+
+    /**
+     * Associate the game controller and the
+     * physical game view.
+     */
     public void setGameView(GameView view)
     {
         this.gameView = view;
     }
 
-    public void newGame()
-    {
-        //reset the points
-        points = 0;
-        pointsView.setText(context.getResources().getString(R.string.points)+" "+points);
-        gameOver = false;
-
-        // Initialise the player/Pacman
-        pacman = new Pacman(context, 100, 400);
-        pacman.setSpeed(10);
-
-        enemies.clear();
-
-        coinsInitialized = false;
-
-        gameView.invalidate(); //redraw screen
-    }
-
+    /**
+     * Store size of the physical game view.
+     */
     public void setSize(int h, int w)
     {
         this.h = h;
         this.w = w;
     }
 
-    public void initializePhysicalGrid() {
-        gridHeight = h / gridRatio;
-        gridWidth = w / gridRatio;
-        gameGrid = new Node[gridHeight][gridWidth];
-        for (int x = 0; x < gridWidth; x++) {
-            for (int y = 0; y < gridHeight; y++) {
-                gameGrid[y][x] = new Node();
-            }
-        }
-    }
-
-    public boolean initializeCoins() {
+    public boolean initializeGame() {
         if (gameGrid == null) {
-            initializePhysicalGrid();
+            initializeVirtualGrid();
         }
+
+        // Reset score.
+        points = 0;
+        pointsView.setText(context.getResources().getString(R.string.points) + " " + points);
+        gameOver = false;
+
         coins.clear();
+        enemies.clear();
 
         // Place the 2 walls
         // Wall 1:
         gameGrid[2][2].placeWall(new Wall(2 * gridRatio, 2 * gridRatio));
         gameGrid[3][2].placeWall(new Wall(2 * gridRatio, 3 * gridRatio));
         gameGrid[4][2].placeWall(new Wall(2 * gridRatio, 4 * gridRatio));
+
         // Wall 2:
         gameGrid[7][7].placeWall(new Wall(7 * gridRatio, 7 * gridRatio));
         gameGrid[8][7].placeWall(new Wall(7 * gridRatio, 8 * gridRatio));
@@ -118,31 +167,71 @@ public class Game {
             }
         }
 
-        // Place the enemy in the grid
-        Ghost enemy = new Ghost(this.context, 500, 800);
-        enemy.setSpeed(10);
-        enemy.setDirection(Direction.RIGHT);
-        enemy.setNoOfStepsLeft(50);
-        enemies.add(enemy);
-        gameGrid[8][5].addEnemy(enemy);
+        // Place enemy in the grid
+        {
+            Ghost enemy = new Ghost(this.context, 500, 800);
+            enemy.setSpeed(10);
+            enemy.setDirection(Direction.RIGHT);
+            enemy.setNoOfStepsLeft(50);
+            enemies.add(enemy);
+            gameGrid[8][5].addEnemy(enemy);
+        }
 
+        // Place another enemy in the grid.
+        {
+            Ghost enemy = new Ghost(this.context, 500, 800);
+            enemy.setSpeed(10);
+            enemy.setDirection(Direction.DOWN);
+            enemy.setNoOfStepsLeft(50);
+            enemies.add(enemy);
+            gameGrid[8][5].addEnemy(enemy);
+        }
+
+        // Initialise the Pacman.
+        pacman = new Pacman(context, 100, 400);
+        pacman.setSpeed(10);
         gameGrid[4][1].addPlayer(pacman);
 
-        coinsInitialized = true;
+        isGameInitialized = true;
 
         return true;
     }
 
-    public boolean areCoinsInitialized() {
-        return coinsInitialized;
+    /*
+     * Initialize the virtual grid.
+     */
+    private void initializeVirtualGrid() {
+        gridHeight = h / gridRatio;
+        gridWidth = w / gridRatio;
+        gameGrid = new Node[gridHeight][gridWidth];
+        for (int x = 0; x < gridWidth; x++) {
+            for (int y = 0; y < gridHeight; y++) {
+                gameGrid[y][x] = new Node();
+            }
+        }
     }
 
+    /**
+     * Whether or not the game has been initialized.
+     */
+    public boolean isGameInitialized() {
+        return isGameInitialized;
+    }
+
+    /**
+     * Move characters.
+     * The playerDirection only involves the player,
+     * not the ghosts.
+     */
     public void performMovement(Direction playerDirection) {
         movePacman(playerDirection);
         moveEnemies();
     }
 
-    public void movePacman(Direction direction)
+    /*
+     * Move the Pacman.
+     */
+    private void movePacman(Direction direction)
     {
         boolean movementAllowed = true;
         Direction currentDirection = pacman.getDirection();
@@ -182,6 +271,7 @@ public class Game {
                 break;
         }
 
+        // Only if the Pacman has moved?
         if((pacman.getLocation().pixelX != _pacx || pacman.getLocation().pixelY != _pacy)) {
             doCollisionCheck(pacman);
             pacman.setDirection(currentDirection);
@@ -191,7 +281,11 @@ public class Game {
         }
     }
 
-    public void moveEnemies() {
+
+    /*
+     * Move all enemies.
+     */
+    private void moveEnemies() {
 
         /**
          * TODO
@@ -303,7 +397,7 @@ public class Game {
                     gc.take();
                     coins.remove(gc);
                     node.removeCoin();
-                    pointsView.setText(context.getResources().getString(R.string.points)+" "+points);
+                    pointsView.setText(context.getResources().getString(R.string.points) + " " + points);
 
                     if (coins.size() == 0) {
                         gameOver = true;
@@ -354,37 +448,54 @@ public class Game {
         return gameGrid[gridY][gridX].isObstructed() && dist == 100;
     }
 
+    /**
+     * Return the physical location of the Pacman.
+     */
     public Location getPacmanLocation() {
         return pacman.getLocation();
     }
 
+    /**
+     * Return a list with all the coins.
+     */
     public ArrayList<GoldCoin> getCoins()
     {
         return coins;
     }
 
+    /**
+     * Returns a list with all enemies.
+     */
     public ArrayList<Ghost> getEnemies() {
         return enemies;
     }
 
+    /**
+     * Returns the virtual game grid.
+     */
     public Node[][] getGameGrid() {
         return gameGrid;
     }
 
+    /**
+     *
+     * @return
+     */
     public Bitmap getPacBitmap()
     {
         return Bitmap.createScaledBitmap(pacman.getCharacterBitmap(), gridRatio, gridRatio, true);
     }
 
+    /**
+     *
+     * @return
+     */
     public boolean isGameOver() {
         return gameOver;
     }
 
-    /**
-     *
-     * @param character
-     * @param direction
-     * @return
+    /*
+     * Whether or not the character can change its direction.
      */
     private boolean canChangeDirection(Character character, Direction direction) {
         boolean retValue = false;
@@ -416,22 +527,37 @@ public class Game {
         return retValue;
     }
 
-    public boolean isDirectionChange(Character character, Direction direction) {
+
+    /*
+     * Whether or not a change in direction has been requested.
+     */
+    private boolean isDirectionChange(Character character, Direction direction) {
         Direction charDirection = character.getDirection();
+
+        // A change from up/down to left/right?
         if ((charDirection == Direction.UP || charDirection == Direction.DOWN)
                 && (direction == Direction.LEFT || direction == Direction.RIGHT)) {
             return true;
-        } else if ((charDirection == Direction.LEFT || charDirection == Direction.RIGHT)
+        }
+
+        // A change from left/right to up/down?
+        else if ((charDirection == Direction.LEFT || charDirection == Direction.RIGHT)
                 && (direction == Direction.UP || direction == Direction.DOWN)) {
             return true;
         }
         return false;
     }
 
+    /*
+     * Convert from physical pixel number to virtual grid number.
+     */
     private int convertToGrid(int pixel) {
         return pixel / gridRatio;
     }
 
+    /*
+     * Returns a random direction. Usefulf for enemies.
+     */
     private Direction selectRandomDirection(Direction currentDirection) {
         Random rnd = new Random();
         Direction newDirection = Direction.STOP;
