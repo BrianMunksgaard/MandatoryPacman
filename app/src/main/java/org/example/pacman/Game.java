@@ -174,7 +174,6 @@ public class Game {
             enemy.setDirection(Direction.RIGHT);
             enemy.setNoOfStepsLeft(50);
             enemies.add(enemy);
-            gameGrid[8][5].addEnemy(enemy);
         }
 
         // Place another enemy in the grid.
@@ -184,13 +183,11 @@ public class Game {
             enemy.setDirection(Direction.DOWN);
             enemy.setNoOfStepsLeft(50);
             enemies.add(enemy);
-            gameGrid[8][5].addEnemy(enemy);
         }
 
         // Initialise the Pacman.
         pacman = new Pacman(context, 100, 400);
         pacman.setSpeed(10);
-        gameGrid[4][1].addPlayer(pacman);
 
         isGameInitialized = true;
 
@@ -233,6 +230,10 @@ public class Game {
      */
     private void movePacman(Direction direction)
     {
+        if (pacman == null) {
+            return;
+        }
+
         boolean movementAllowed = true;
         Direction currentDirection = pacman.getDirection();
         if (isDirectionChange(pacman, direction)) {
@@ -275,8 +276,6 @@ public class Game {
         if((pacman.getLocation().pixelX != _pacx || pacman.getLocation().pixelY != _pacy)) {
             doCollisionCheck(pacman);
             pacman.setDirection(currentDirection);
-            gameGrid[convertToGrid(_pacy)][convertToGrid(_pacx)].removePlayer();
-            gameGrid[convertToGrid(pacman.getLocation().pixelY)][convertToGrid(pacman.getLocation().pixelX)].addPlayer(pacman);
             gameView.invalidate();
         }
     }
@@ -453,14 +452,6 @@ public class Game {
      */
     public Location getPacmanLocation() {
         return pacman.getLocation();
-    }
-
-    /**
-     * Return a list with all the coins.
-     */
-    public ArrayList<GoldCoin> getCoins()
-    {
-        return coins;
     }
 
     /**

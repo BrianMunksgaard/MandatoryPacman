@@ -50,7 +50,6 @@ public class MainActivity extends Activity {
             @Override
             public void onClick(View v) {
                 currentDirection = Direction.LEFT;
-//                game.movePacman(10, Direction.LEFT);
             }
         });
 
@@ -59,7 +58,6 @@ public class MainActivity extends Activity {
             @Override
             public void onClick(View v) {
                 currentDirection = Direction.RIGHT;
-//                game.movePacman(10, Direction.RIGHT);
             }
         });
 
@@ -68,7 +66,6 @@ public class MainActivity extends Activity {
             @Override
             public void onClick(View v) {
                 currentDirection = Direction.UP;
-//                game.movePacman(10, Direction.UP);
             }
         });
 
@@ -77,7 +74,6 @@ public class MainActivity extends Activity {
             @Override
             public void onClick(View v) {
                 currentDirection = Direction.DOWN;
-//                game.movePacman(10, Direction.DOWN);
             }
         });
 
@@ -116,10 +112,8 @@ public class MainActivity extends Activity {
         // as you specify a parent activity in AndroidManifest.xml.
         int id = item.getItemId();
         if (id == R.id.action_settings) {
-//            Toast.makeText(this,"settings clicked",Toast.LENGTH_LONG).show();
             return true;
         } else if (id == R.id.action_newGame) {
-//            Toast.makeText(this,"New Game clicked",Toast.LENGTH_LONG).show();
             currentDirection = Direction.STOP;
             timeLeft = gameLength;
             isRunning = true;

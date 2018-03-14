@@ -6,7 +6,6 @@ import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.util.AttributeSet;
-import android.util.Log;
 import android.view.View;
 import android.widget.Toast;
 
@@ -55,18 +54,18 @@ public class GameView extends View {
 	//drawn whenever we update the screen.
 	@Override
 	protected void onDraw(Canvas canvas) {
-		//Here we get the height and weight
-		h = canvas.getHeight();
-		w = canvas.getWidth();
-		//update the size for the canvas to the game.
-		game.setSize(h,w);
+		if (!game.isGameInitialized()) {
+			//Here we get the height and weight
+			h = canvas.getHeight();
+			w = canvas.getWidth();
+			//update the size for the canvas to the game.
+			game.setSize(h,w);
+
+			game.initializeGame();
+		}
 
 		//Making a new paint object
 		canvas.drawColor(Color.WHITE); //clear entire canvas to white color
-
-		if (!game.isGameInitialized()) {
-			game.initializeGame();
-		}
 
 		Paint paint = new Paint();
 

@@ -12,10 +12,6 @@ public class Wall {
         location = new Location(x, y);
     }
 
-    public void setLocation(Location location) {
-        this.location = location;
-    }
-
     public Location getLocation() {
         return location;
     }

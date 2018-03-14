@@ -25,10 +25,6 @@ public class GoldCoin {
         return value;
     }
 
-    public boolean isTaken() {
-        return hasBeenTaken;
-    }
-
     public void take() {
         hasBeenTaken = true;
     }
